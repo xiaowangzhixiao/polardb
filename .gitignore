@@ -1,0 +1,5 @@
+*.sublime*
+lib/
+*.o
+*.a
+
