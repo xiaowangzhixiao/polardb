@@ -4,7 +4,7 @@
 #include <unistd.h>
 #include "util.h"
 
-namespace palor_race {
+namespace polar_race {
     bool FileExists(const std::string& path) {
         return access(path.c_str(), F_OK) == 0;
     }
