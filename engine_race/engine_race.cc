@@ -24,11 +24,11 @@ namespace polar_race {
         return data.key;
     }
 
-    int getIndex(const PolarString &key) {
+    uint16_t getIndex(const PolarString &key) {
         if (key.size() > 1) {
-            return (((uint16_t)key[0]) << 2) + ( ((uint16_t)key[1] >> 6) & 0x3);
+            return ((((uint16_t)key[0]) << 2) | (((uint16_t)key[1] >> 6) & 0x3)) & 0x03ff;
         } else {
-            return ((int)key[0]) << 2;
+            return (((uint16_t)key[0]) << 2) & 0x03ff;
         }
     }
 
@@ -116,7 +116,7 @@ namespace polar_race {
     RetCode EngineRace::Write(const PolarString& key, const PolarString& value) {
         Location location{};
         RetCode retCode;
-        int index;
+        uint16_t index;
 
         // 1
         location.key = chang2Uint(key);
@@ -147,7 +147,7 @@ namespace polar_race {
     RetCode EngineRace::Read(const PolarString& key, std::string* value) {
         Location location{};
         RetCode retCode;
-        int index;
+        uint16_t index;
 
         // 1
         location.key = chang2Uint(key);
