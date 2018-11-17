@@ -2,4 +2,7 @@
 lib/
 *.o
 *.a
-
+.idea/
+test
+CMakeLists.txt
+cmake-build-debug/

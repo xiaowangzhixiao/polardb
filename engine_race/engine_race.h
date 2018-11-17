@@ -3,35 +3,44 @@
 #define ENGINE_RACE_ENGINE_RACE_H_
 #include <string>
 #include "include/engine.h"
+#include <cstdlib>
+#include "partiton.h"
+
+#define BUCKET_NUM 1024
 
 namespace polar_race {
 
-class EngineRace : public Engine  {
- public:
-  static RetCode Open(const std::string& name, Engine** eptr);
+    union Str2Uint {
+        char data[8];
+        uint64_t key;
+    };
 
-  explicit EngineRace(const std::string& dir) {
-  }
+    class EngineRace : public Engine  {
+    public:
+        static RetCode Open(const std::string& name, Engine** eptr);
 
-  ~EngineRace();
+        explicit EngineRace(const std::string& dir):_dir(dir){
+        }
 
-  RetCode Write(const PolarString& key,
-      const PolarString& value) override;
+        ~EngineRace();
 
-  RetCode Read(const PolarString& key,
-      std::string* value) override;
+        RetCode Write(const PolarString& key,
+          const PolarString& value) override;
 
-  /*
-   * NOTICE: Implement 'Range' in quarter-final,
-   *         you can skip it in preliminary.
-   */
-  RetCode Range(const PolarString& lower,
-      const PolarString& upper,
-      Visitor &visitor) override;
+        RetCode Read(const PolarString& key,
+          std::string* value) override;
 
- private: 
+        /*
+        * NOTICE: Implement 'Range' in quarter-final,
+        *         you can skip it in preliminary.
+        */
+        RetCode Range(const PolarString& lower,
+          const PolarString& upper,
+          Visitor &visitor) override;
 
-};
+        Partition partition[BUCKET_NUM];
+        std::string _dir;
+    };
 
 }  // namespace polar_race
 
