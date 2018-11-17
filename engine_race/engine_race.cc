@@ -152,7 +152,7 @@ namespace polar_race {
 
         // 1
         location.key = chang2Uint(key);
-        index = getIndex(key);
+        index = getIndex(location.key);
         Partition & part = partition[index];
 
         // 2
