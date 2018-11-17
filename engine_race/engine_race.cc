@@ -26,7 +26,7 @@ namespace polar_race {
 
     int getIndex(const PolarString &key) {
         if (key.size() > 1) {
-            return (((int)key[0]) << 2) + ( (key[1] >> 6) & 0x3);
+            return (((uint16_t)key[0]) << 2) + ( ((uint16_t)key[1] >> 6) & 0x3);
         } else {
             return ((int)key[0]) << 2;
         }
@@ -54,7 +54,6 @@ namespace polar_race {
 
     void * initThread(void *arg) {
         ThreadInfo info = ((ThreadInfo *)arg)[0];
-        std::cout << "start init " << (uint32_t)info.id << std::endl;
         for (int i = 0; i < 1024/THREAD_NUM; ++i) {
             uint32_t index = (uint32_t)info.id*(1024/THREAD_NUM) + i;
             info.engineRace->partition[index].valueLog.init(info.engineRace->_dir, index);
@@ -121,7 +120,7 @@ namespace polar_race {
 
         // 1
         location.key = chang2Uint(key);
-        index = getIndex(location.key);
+        index = getIndex(key);
         Partition & part = partition[index];
 
         // 2
@@ -152,7 +151,7 @@ namespace polar_race {
 
         // 1
         location.key = chang2Uint(key);
-        index = getIndex(location.key);
+        index = getIndex(key);
         Partition & part = partition[index];
 
         // 2

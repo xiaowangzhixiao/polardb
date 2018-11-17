@@ -45,8 +45,9 @@ namespace polar_race {
                 return kIOError;
             }
 
-            _firstRead = false;
-            return load();
+//            _firstRead = false;
+//            return load();
+            return kSucc;
 
         } else {
             _fd = open(filename.c_str(), O_RDWR | O_CREAT, 0644);
