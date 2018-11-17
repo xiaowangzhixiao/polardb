@@ -12,7 +12,7 @@
 #include <atomic>
 #include "include/engine.h"
 
-#define MAX_LEVEL 15
+#define MAX_LEVEL 9
 namespace polar_race {
 
     template<typename Key, typename Value>
@@ -51,7 +51,7 @@ namespace polar_race {
         {
             int lev = 0;
             std::random_device rd;
-            while(rd() % 3 == 0 && lev < MAX_LEVEL - 1)
+            while(rd() % 4 == 0 && lev < MAX_LEVEL - 1)
                 ++lev;
             return lev;
         }
