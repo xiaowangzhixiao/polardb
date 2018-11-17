@@ -51,13 +51,9 @@ namespace polar_race {
         {
             int lev = 0;
             std::random_device rd;
-            while(true)
-            {
-                if(rd()%2 == 0)
-                    lev++;
-                else
-                    return lev < MAX_LEVEL ? lev : MAX_LEVEL - 1;
-            }
+            while(rd() % 3 == 0 && lev < MAX_LEVEL - 1)
+                ++lev;
+            return lev;
         }
     };
 
