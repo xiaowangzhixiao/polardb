@@ -45,8 +45,8 @@ namespace polar_race {
                 return kIOError;
             }
 
-//            _firstRead = false;
-//            return load();
+            _firstRead = false;
+            return load();
             return kSucc;
 
         } else {
@@ -70,11 +70,11 @@ namespace polar_race {
 
     RetCode MetaLog::find(Location &location) {
         RetCode retCode;
-        bool firstRead = true;
-        _firstRead.compare_exchange_strong(firstRead, false);
-        if (firstRead) {
-            load();
-        }
+//        bool firstRead = true;
+//        _firstRead.compare_exchange_strong(firstRead, false);
+//        if (firstRead) {
+//            load();
+//        }
 
         retCode = _table.find(location.key, location.addr);
 
