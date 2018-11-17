@@ -64,7 +64,7 @@ namespace polar_race {
             return kIOError;
         }
         _offset++;
-        return kInvalidArgument;
+        return kSucc;
     }
 
     RetCode MetaLog::find(Location &location) {

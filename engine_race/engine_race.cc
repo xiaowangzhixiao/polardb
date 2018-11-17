@@ -1,6 +1,9 @@
 // Copyright [2018] Alibaba Cloud All rights reserved
 #include "engine_race.h"
+#include "util.h"
+#include <sys/stat.h>
 #include <pthread.h>
+#include <iostream>
 
 #define THREAD_NUM 64
 
@@ -23,9 +26,9 @@ namespace polar_race {
 
     int getIndex(const PolarString &key) {
         if (key.size() > 1) {
-            return (key[0] << 2) + ( key[1] >> 6 );
+            return (((int)key[0]) << 2) + ( (key[1] >> 6) & 0xFF);
         } else {
-            return key[0] << 2;
+            return ((int)key[0]) << 2;
         }
     }
 
@@ -47,8 +50,10 @@ namespace polar_race {
 
     void * initThread(void *arg) {
         ThreadInfo info = ((ThreadInfo *)arg)[0];
+        std::cout << "start init " << (uint32_t)info.id << std::endl;
         for (int i = 0; i < 1024/THREAD_NUM; ++i) {
-            uint32_t index = (uint32_t)info.id*THREAD_NUM + i;
+            uint32_t index = (uint32_t)info.id*(1024/THREAD_NUM) + i;
+            std::cout << "index:" << index << " i:" << i << std::endl;
             info.engineRace->partition[index].valueLog.init(info.engineRace->_dir, index);
             info.engineRace->partition[index].metaLog.init(info.engineRace->_dir, index);
         }
@@ -58,6 +63,11 @@ namespace polar_race {
     RetCode EngineRace::Open(const std::string& name, Engine** eptr) {
         *eptr = nullptr;
         EngineRace *engine_race = new EngineRace(name);
+
+        if (!FileExists(name)
+            && 0 != mkdir(name.c_str(), 0755)) {
+            return kIOError;
+        }
         // 1. 读取最新metalog文件建立table
         // 2. 恢复valuelog文件offset
 
@@ -81,6 +91,8 @@ namespace polar_race {
                 return kIncomplete;
             }
         }
+
+        std::cout << "open success" << std::endl;
 
         *eptr = engine_race;
         return kSucc;
@@ -108,6 +120,7 @@ namespace polar_race {
         location.key = chang2Uint(key);
         index = getIndex(key);
         Partition & part = partition[index];
+        std::cout << "write key" << key.data() << "index" << index << std::endl;
 
         // 2
         retCode = part.valueLog.append(value, location.addr);

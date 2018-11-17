@@ -20,6 +20,7 @@ namespace polar_race {
         static RetCode Open(const std::string& name, Engine** eptr);
 
         explicit EngineRace(const std::string& dir):_dir(dir){
+
         }
 
         ~EngineRace();

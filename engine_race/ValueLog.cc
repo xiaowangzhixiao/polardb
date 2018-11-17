@@ -4,6 +4,8 @@
 #include <sys/stat.h>
 #include <fcntl.h>
 
+#define VALUE_SIZE 4096
+
 namespace polar_race {
 
     ValueLog::ValueLog():_offset(0),_fd(-1) {
@@ -47,24 +49,24 @@ namespace polar_race {
 
     RetCode polar_race::ValueLog::append(const polar_race::PolarString &value, uint32_t &addr) {
         addr = _offset.fetch_add(1);
-        if ( pwrite(_fd, value.data(), 4096, ((__off_t)addr)*4096) < 0 ) {
+        if ( pwrite(_fd, value.data(), VALUE_SIZE, ((__off_t)addr)*VALUE_SIZE) < 0 ) {
             return kIOError;
         }
         return kSucc;
     }
 
     RetCode ValueLog::read(const uint32_t &addr, std::string *value) {
-        char buffer[4096];
+        char buffer[VALUE_SIZE];
         if (addr > _offset) {
             return kInvalidArgument;
         }
-        if (pread(_fd, buffer, 4096, ((__off_t)addr) * 4096) < 0) {
+        if (pread(_fd, buffer, VALUE_SIZE, ((__off_t)addr) * VALUE_SIZE) < 0) {
             perror("read file error");
             return kIOError;
         }
 
         *value = std::string(buffer, 4096);
 
-        return kInvalidArgument;
+        return kSucc;
     }
 }
