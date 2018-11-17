@@ -26,10 +26,14 @@ namespace polar_race {
 
     int getIndex(const PolarString &key) {
         if (key.size() > 1) {
-            return (((int)key[0]) << 2) + ( (key[1] >> 6) & 0xFF);
+            return (((int)key[0]) << 2) + ( (key[1] >> 6) & 0x3);
         } else {
             return ((int)key[0]) << 2;
         }
+    }
+
+    int getIndex(const uint64_t &key) {
+        return static_cast<int>(key & 0x03FF);
     }
 
     RetCode Engine::Open(const std::string& name, Engine** eptr) {
@@ -117,7 +121,7 @@ namespace polar_race {
 
         // 1
         location.key = chang2Uint(key);
-        index = getIndex(key);
+        index = getIndex(location.key);
         Partition & part = partition[index];
 
         // 2
