@@ -53,7 +53,6 @@ namespace polar_race {
         std::cout << "start init " << (uint32_t)info.id << std::endl;
         for (int i = 0; i < 1024/THREAD_NUM; ++i) {
             uint32_t index = (uint32_t)info.id*(1024/THREAD_NUM) + i;
-            std::cout << "index:" << index << " i:" << i << std::endl;
             info.engineRace->partition[index].valueLog.init(info.engineRace->_dir, index);
             info.engineRace->partition[index].metaLog.init(info.engineRace->_dir, index);
         }
@@ -120,14 +119,13 @@ namespace polar_race {
         location.key = chang2Uint(key);
         index = getIndex(key);
         Partition & part = partition[index];
-        std::cout << "write key" << key.data() << "index" << index << std::endl;
 
         // 2
         retCode = part.valueLog.append(value, location.addr);
         if (retCode != kSucc) {
             return retCode;
         }
-
+        std::cout << "write index:" << index << " addr:" << location.addr << std::endl;
         // 3
         retCode = part.metaLog.append(location);
 
@@ -158,6 +156,8 @@ namespace polar_race {
         if (retCode != kSucc) {
             return retCode;
         }
+
+        std::cout << "read index:" << index << " addr:" << location.addr << std::endl;
 
         // 3
         value->clear();
