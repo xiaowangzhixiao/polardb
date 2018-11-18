@@ -4,7 +4,7 @@
 #include <atomic>
 #include <unistd.h>
 #include <include/engine.h>
-#include <hash_map>
+#include <map>
 
 namespace polar_race {
 
@@ -27,7 +27,7 @@ namespace polar_race {
         std::atomic_uint_least32_t _offset;
         int _fd;
         std::atomic_bool _firstRead;
-        __gnu_cxx::hash_map<uint64_t, uint32_t> _table;
+        std::map<uint64_t, uint32_t> _table;
     };
 
 }
