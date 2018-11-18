@@ -38,7 +38,7 @@ namespace polar_race {
 
     template<typename Key, typename Value>
     HashTable<Key, Value>::HashTable(int hint) {
-        static unsigned long primes[] = {509, 509, 1021, 2053, 4093, 8191, 16381, 32771, 65521, 98317};
+        static unsigned long primes[] = {509, 509, 1021, 2053, 4093, 8191, 16381, 24593, 32771, 65521, 98317};
         int i;
         assert(hint >= 0);
         for (i = 1; primes[i] < hint; ++i);
