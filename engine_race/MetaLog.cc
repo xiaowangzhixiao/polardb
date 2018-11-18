@@ -7,7 +7,7 @@
 
 namespace polar_race {
 
-    MetaLog::MetaLog():_offset(0),_fd(-1), _firstRead(true), _table(30000) {
+    MetaLog::MetaLog():_offset(0),_fd(-1), _firstRead(true), _table(32773) {
 
     }
 
@@ -48,9 +48,8 @@ namespace polar_race {
             }
 
             _firstRead = false;
-            std::cout<<"init meta:"<<index;
             RetCode retCode = load();
-            std::cout <<" table size:" << _table.size() << std::endl;
+            std::cout <<"init meta:" + std::to_string(index) + " table size:" + std::to_string( _table.size()) + "\n";
             return retCode;
         } else {
             _fd = open(filename.c_str(), O_RDWR | O_CREAT, 0644);

@@ -128,9 +128,9 @@ namespace polar_race {
             return retCode;
         }
 //        std::cout << "write index:" << index << " addr:" << location.addr << std::endl;
-        if (location.addr % 1000 == 0) {
-            std::cout << "write index:" << index << " addr:" << location.addr << std::endl;
-        }
+//        if (location.addr % 1000 == 0) {
+//            std::cout << "write index:" << index << " addr:" << location.addr << std::endl;
+//        }
         // 3
         retCode = part.metaLog.append(location);
 
@@ -156,16 +156,19 @@ namespace polar_race {
         index = getIndex(key);
         Partition & part = partition[index];
 
+        std::cout << "read index:" << index ;
+
         // 2
         retCode = part.metaLog.find(location);
         if (retCode != kSucc) {
+            std::cout << " addr:" << location.addr << std::endl;
             return retCode;
         }
 
-//        std::cout << "read index:" << index << " addr:" << location.addr << std::endl;
-        if (location.addr % 1000 == 0) {
-            std::cout << "write index:" << index << " addr:" << location.addr << std::endl;
-        }
+        std::cout << " addr:" << location.addr << std::endl;
+//        if (location.addr % 1000 == 0) {
+//            std::cout << "write index:" << index << " addr:" << location.addr << std::endl;
+//        }
         // 3
         value->clear();
         retCode = part.valueLog.read(location.addr, value);

@@ -26,19 +26,19 @@ namespace polar_race {
         ~HashTable();
         RetCode addOrUpdate(const Key &, const Value &);
         RetCode find(const Key &, Value &);
-        long size() {
+        int size() {
             return _size;
         }
 
     private:
         pHashNode *_bucket;
-        long _bucketSize;
-        std::atomic_long _size;
+        int _bucketSize;
+        std::atomic_int _size;
     };
 
     template<typename Key, typename Value>
     HashTable<Key, Value>::HashTable(int hint) {
-        static unsigned long primes[] = {509, 509, 1021, 2053, 4093, 8191, 16381, 24593, 32771, 65521, 98317};
+        static unsigned int primes[] = {509, 509, 1021, 2053, 4093, 8191, 16381, 24593, 32771, 65521, 98317};
         int i;
         assert(hint >= 0);
         for (i = 1; primes[i] < hint; ++i);
@@ -68,7 +68,7 @@ namespace polar_race {
     template<typename Key, typename Value>
     RetCode HashTable<Key, Value>::addOrUpdate(const Key &key, const Value &value) {
         pHashNode p;
-        unsigned long index;
+        unsigned int index;
         index = key % _bucketSize;
         for (p = _bucket[index]; p ; p = p->next) {
             if (key == p->key) {
@@ -79,22 +79,25 @@ namespace polar_race {
         if (p == nullptr) {
             p = (pHashNode)malloc(sizeof(HashNode<Key, Value>));
             p->key = key;
-            p->next = _bucket[index];
-            _bucket[index] = p;
+            while (true) {
+                p->next = _bucket[index];
+                if (__sync_bool_compare_and_swap(&p->next, _bucket[index], p)) {
+                    break;
+                }
+            }
             _size++;
         }
 
         p->value = value;
-
         return kSucc;
     }
 
     template<typename Key, typename Value>
     RetCode HashTable<Key, Value>::find(const Key &key, Value &value) {
-        unsigned long index;
+        unsigned int index;
         pHashNode p;
 
-        index = key%_bucketSize;
+        index = key % _bucketSize;
         for (p = _bucket[index]; p ; p = p->next) {
             if (key == p->key) {
                 break;
