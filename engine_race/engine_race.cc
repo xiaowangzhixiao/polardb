@@ -74,26 +74,32 @@ namespace polar_race {
         // 1. 读取最新metalog文件建立table
         // 2. 恢复valuelog文件offset
 
-        pthread_t a_thread[THREAD_NUM];
-        ThreadInfo info[THREAD_NUM];
-        int res;
-        for (uint8_t i = 0; i < THREAD_NUM; ++i) {
-            info[i].engineRace = engine_race;
-            info[i].id = i;
-            res = pthread_create(&a_thread[i], nullptr, initThread, &info[i]);
-            if (res != 0) {
-                std::cout << "fail to create thread" << std::endl;
-                return kIncomplete;
-            }
+//        pthread_t a_thread[THREAD_NUM];
+//        ThreadInfo info[THREAD_NUM];
+//        int res;
+//        for (uint8_t i = 0; i < THREAD_NUM; ++i) {
+//            info[i].engineRace = engine_race;
+//            info[i].id = i;
+//            res = pthread_create(&a_thread[i], nullptr, initThread, &info[i]);
+//            if (res != 0) {
+//                std::cout << "fail to create thread" << std::endl;
+//                return kIncomplete;
+//            }
+//        }
+//
+//        for (uint8_t i = 0; i < THREAD_NUM; ++i) {
+//            res = pthread_join(a_thread[i], nullptr);
+//            if (res != 0) {
+//                std::cout << "fail to join thread" << std::endl;
+//                return kIncomplete;
+//            }
+//        }
+
+        for (int i = 0; i < BUCKET_NUM; ++i) {
+            engine_race->partition[i].valueLog.init(engine_race->_dir, i);
+            engine_race->partition[i].metaLog.init(engine_race->_dir, i);
         }
 
-        for (uint8_t i = 0; i < THREAD_NUM; ++i) {
-            res = pthread_join(a_thread[i], nullptr);
-            if (res != 0) {
-                std::cout << "fail to join thread" << std::endl;
-                return kIncomplete;
-            }
-        }
         std::cout << "open success" << std::endl;
 
         *eptr = engine_race;

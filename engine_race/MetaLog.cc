@@ -47,8 +47,8 @@ namespace polar_race {
                 return kIOError;
             }
 
-            _firstRead = false;
             RetCode retCode = load();
+            _firstRead = false;
             std::cout <<"init meta:" + std::to_string(index) + " table size:" + std::to_string( _table.size()) + "\n";
             return retCode;
         } else {
@@ -71,15 +71,15 @@ namespace polar_race {
     }
 
     RetCode MetaLog::find(Location &location) {
-//        auto it = _table.find(location.key);
-//        if (it == _table.end()) {
-//            std::cout << "not found key" << std::endl;
-//            return kNotFound;
+        RetCode retCode;
+//        bool firstRead = true;
+//        _firstRead.compare_exchange_strong(firstRead, false);
+//        if (firstRead) {
+//            load();
 //        }
-//
-//        location.addr = it->second;
-//
-//        return kSucc;
-        return _table.find(location.key, location.addr);
+
+        retCode = _table.find(location.key, location.addr);
+
+        return retCode;
     }
 }
