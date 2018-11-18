@@ -7,7 +7,7 @@
 
 namespace polar_race {
 
-    MetaLog::MetaLog():_offset(0),_fd(-1), _firstRead(true), _table(32770) {
+    MetaLog::MetaLog():_offset(0),_fd(-1), _firstRead(true), _table(32770),_loading(false) {
 
     }
 
@@ -72,14 +72,20 @@ namespace polar_race {
 
     RetCode MetaLog::find(Location &location) {
         RetCode retCode;
-//        bool firstRead = true;
-//        _firstRead.compare_exchange_strong(firstRead, false);
-//        if (firstRead) {
-//            load();
-//        }
-        if (_firstRead || _table.size() == 0) {
-            exit(0);
+        bool loading = false;
+        _loading.compare_exchange_strong(loading, true);
+        if (!loading) {
+            if (_firstRead){
+                load();
+                _firstRead = false;
+            }
+            _loading = false;
+        } else {
+            while (_firstRead) {
+                usleep(5);
+            }
         }
+
 
         retCode = _table.find(location.key, location.addr);
 

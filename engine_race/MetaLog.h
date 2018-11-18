@@ -27,6 +27,7 @@ namespace polar_race {
         std::atomic_uint_least32_t _offset;
         int _fd;
         std::atomic_bool _firstRead;
+        std::atomic_bool _loading;
         HashTable<uint64_t, uint32_t> _table;
     };
 
