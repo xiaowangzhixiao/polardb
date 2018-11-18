@@ -129,7 +129,7 @@ namespace polar_race {
             return retCode;
         }
 //        std::cout << "write index:" << index << " addr:" << location.addr << std::endl;
-        if (location.addr % 10000 == 0) {
+        if (location.addr % 1000 == 0) {
             std::cout << "write index:" << index << " addr:" << location.addr << std::endl;
         }
         // 3
@@ -164,7 +164,7 @@ namespace polar_race {
         }
 
 //        std::cout << "read index:" << index << " addr:" << location.addr << std::endl;
-        if (location.addr % 10000 == 0) {
+        if (location.addr % 1000 == 0) {
             std::cout << "write index:" << index << " addr:" << location.addr << std::endl;
         }
         // 3

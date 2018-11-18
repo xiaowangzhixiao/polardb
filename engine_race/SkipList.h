@@ -12,7 +12,7 @@
 #include <atomic>
 #include "include/engine.h"
 
-#define MAX_LEVEL 6
+#define MAX_LEVEL 9
 namespace polar_race {
 
     template<typename Key, typename Value>
