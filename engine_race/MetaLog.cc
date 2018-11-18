@@ -77,6 +77,9 @@ namespace polar_race {
 //        if (firstRead) {
 //            load();
 //        }
+        if (_firstRead || _table.size() == 0) {
+            exit(0);
+        }
 
         retCode = _table.find(location.key, location.addr);
 
