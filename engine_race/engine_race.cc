@@ -5,7 +5,7 @@
 #include <pthread.h>
 #include <iostream>
 
-#define THREAD_NUM 8
+#define THREAD_NUM 64
 
 namespace polar_race {
 

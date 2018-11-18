@@ -45,7 +45,7 @@ namespace polar_race {
 
         _bucketSize = primes[i-1];
         _size = 0;
-        _bucket = new pHashNode[_bucketSize];
+        _bucket = (pHashNode *)malloc(sizeof(pHashNode)*_bucketSize);
         for (int j = 0; j < _bucketSize; ++j) {
             _bucket[j] = nullptr;
         }
@@ -58,11 +58,11 @@ namespace polar_race {
             for (int i = 0; i < _size; ++i) {
                 for (p = _bucket[i]; p; p = q) {
                     q = p->next;
-                    delete(p);
+                    free(p);
                 }
             }
         }
-        delete[](_bucket);
+        free(_bucket);
     }
 
     template<typename Key, typename Value>
@@ -77,7 +77,7 @@ namespace polar_race {
         }
 
         if (p == nullptr) {
-            p = new HashNode<Key, Value>;
+            p = (pHashNode)malloc(sizeof(HashNode<Key, Value>));
             p->key = key;
             p->next = _bucket[index];
             _bucket[index] = p;

@@ -48,8 +48,9 @@ namespace polar_race {
             }
 
             _firstRead = false;
+            std::cout<<"init meta:"<<index;
             RetCode retCode = load();
-            std::cout<<"init meta:"<<index<<" table size:" << _table.size()<<std::endl;
+            std::cout <<" table size:" << _table.size() << std::endl;
             return retCode;
         } else {
             _fd = open(filename.c_str(), O_RDWR | O_CREAT, 0644);
