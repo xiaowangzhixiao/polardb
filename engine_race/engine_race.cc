@@ -54,8 +54,8 @@ namespace polar_race {
 
     void * initThread(void *arg) {
         ThreadInfo info = ((ThreadInfo *)arg)[0];
-        for (int i = 0; i < 1024/THREAD_NUM; ++i) {
-            uint32_t index = (uint32_t)info.id*(1024/THREAD_NUM) + i;
+        for (int i = 0; i < BUCKET_NUM/THREAD_NUM; ++i) {
+            uint32_t index = (uint32_t)info.id*(BUCKET_NUM/THREAD_NUM) + i;
             info.engineRace->partition[index].valueLog.init(info.engineRace->_dir, index);
             info.engineRace->partition[index].metaLog.init(info.engineRace->_dir, index);
         }

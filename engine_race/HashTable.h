@@ -26,6 +26,9 @@ namespace polar_race {
         ~HashTable();
         RetCode addOrUpdate(const Key &, const Value &);
         RetCode find(const Key &, Value &);
+        long size() {
+            return _size;
+        }
 
     private:
         pHashNode *_bucket;
