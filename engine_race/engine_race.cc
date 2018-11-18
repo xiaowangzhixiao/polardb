@@ -86,8 +86,8 @@ namespace polar_race {
             }
         }
 
-        for (pthread_t j : a_thread) {
-            res = pthread_join(j, nullptr);
+        for (uint8_t i = 0; i < THREAD_NUM; ++i) {
+            res = pthread_join(a_thread[i], nullptr);
             if (res != 0) {
                 std::cout << "fail to join thread" << std::endl;
                 return kIncomplete;
