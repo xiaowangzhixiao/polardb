@@ -32,7 +32,7 @@ namespace polar_race {
 
     private:
         pHashNode *_bucket;
-        int _bucketSize;
+        unsigned int _bucketSize;
         std::atomic_int _size;
     };
 
@@ -46,6 +46,9 @@ namespace polar_race {
         _bucketSize = primes[i-1];
         _size = 0;
         _bucket = (pHashNode *)malloc(sizeof(pHashNode)*_bucketSize);
+        if (_bucket == nullptr) {
+            exit(0);
+        }
         for (int j = 0; j < _bucketSize; ++j) {
             _bucket[j] = nullptr;
         }
@@ -78,13 +81,12 @@ namespace polar_race {
 
         if (p == nullptr) {
             p = (pHashNode)malloc(sizeof(HashNode<Key, Value>));
-            p->key = key;
-            while (true) {
-                p->next = _bucket[index];
-                if (__sync_bool_compare_and_swap(&p->next, _bucket[index], p)) {
-                    break;
-                }
+            if (p == nullptr) {
+                return kOutOfMemory;
             }
+            p->key = key;
+            p->next = _bucket[index];
+            _bucket[index] = p;
             _size++;
         }
 
