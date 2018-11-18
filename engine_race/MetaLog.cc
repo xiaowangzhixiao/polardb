@@ -7,7 +7,7 @@
 
 namespace polar_race {
 
-    MetaLog::MetaLog():_offset(0),_fd(-1), _firstRead(true) {
+    MetaLog::MetaLog():_offset(0),_fd(-1), _firstRead(true), _table(62500) {
 
     }
 
@@ -25,7 +25,8 @@ namespace polar_race {
                 perror("read meta file failed");
                 return kIOError;
             }
-            _table[location.key] = location.addr;
+//            _table[location.key] = location.addr;
+            _table.addOrUpdate(location.key, location.addr);
         }
         return kSucc;
     }
@@ -69,15 +70,15 @@ namespace polar_race {
     }
 
     RetCode MetaLog::find(Location &location) {
-
-        auto it = _table.find(location.key);
-        if (it == _table.end()) {
-            std::cout << "not found key" << std::endl;
-            return kNotFound;
-        }
-
-        location.addr = it->second;
-
-        return kSucc;
+//        auto it = _table.find(location.key);
+//        if (it == _table.end()) {
+//            std::cout << "not found key" << std::endl;
+//            return kNotFound;
+//        }
+//
+//        location.addr = it->second;
+//
+//        return kSucc;
+        return _table.find(location.key, location.addr);
     }
 }
