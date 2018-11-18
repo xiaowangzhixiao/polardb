@@ -6,7 +6,7 @@
 #include <iostream>
 #include <cstdio>
 
-#define THREAD_NUM 8
+#define THREAD_NUM 16
 
 namespace polar_race {
 
@@ -129,9 +129,9 @@ namespace polar_race {
             return retCode;
         }
 //        std::cout << "write index:" << index << " addr:" << location.addr << std::endl;
-//        if (location.addr % 1000 == 0) {
-//            std::cout << "write index:" << index << " addr:" << location.addr << std::endl;
-//        }
+        if (location.addr % 1000 == 0) {
+            std::cout << "write index:" << index << " addr:" << location.addr << std::endl;
+        }
         // 3
         retCode = part.metaLog.append(location);
 
@@ -157,16 +157,16 @@ namespace polar_race {
         index = getIndex(key);
         Partition & part = partition[index];
 
-        std::cout << "read index:" << index ;
+
 
         // 2
         retCode = part.metaLog.find(location);
         if (retCode != kSucc) {
-            std::cout << " addr:" << location.addr << std::endl;
+            std::cout << " not found\n";
             return retCode;
         }
 
-        std::cout << " addr:" << location.addr << std::endl;
+        std::cout << "read index:" + std::to_string(index) + " addr:" + std::to_string(location.addr) + "\n";
 //        if (location.addr % 1000 == 0) {
 //            std::cout << "write index:" << index << " addr:" << location.addr << std::endl;
 //        }
