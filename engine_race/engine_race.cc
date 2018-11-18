@@ -93,7 +93,6 @@ namespace polar_race {
                 return kIncomplete;
             }
         }
-
         std::cout << "open success" << std::endl;
 
         *eptr = engine_race;

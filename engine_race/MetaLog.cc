@@ -1,6 +1,7 @@
 #include "MetaLog.h"
 #include "util.h"
 #include <cstdlib>
+#include <iostream>
 #include <sys/stat.h>
 #include <fcntl.h>
 
@@ -24,7 +25,7 @@ namespace polar_race {
                 perror("read meta file failed");
                 return kIOError;
             }
-            _table.addOrUpdate(location.key, location.addr);
+            _table[location.key] = location.addr;
         }
         return kSucc;
     }
@@ -47,7 +48,6 @@ namespace polar_race {
 
             _firstRead = false;
             return load();
-            return kSucc;
 
         } else {
             _fd = open(filename.c_str(), O_RDWR | O_CREAT, 0644);
@@ -69,15 +69,15 @@ namespace polar_race {
     }
 
     RetCode MetaLog::find(Location &location) {
-        RetCode retCode;
-//        bool firstRead = true;
-//        _firstRead.compare_exchange_strong(firstRead, false);
-//        if (firstRead) {
-//            load();
-//        }
 
-        retCode = _table.find(location.key, location.addr);
+        auto it = _table.find(location.key);
+        if (it == _table.end()) {
+            std::cout << "not found key" << std::endl;
+            return kNotFound;
+        }
 
-        return retCode;
+        location.addr = it->second;
+
+        return kSucc;
     }
 }
