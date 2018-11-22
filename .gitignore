@@ -3,6 +3,7 @@ lib/
 *.o
 *.a
 .idea/
-test
+test/test_with_kill
+test/test
 CMakeLists.txt
 cmake-build-debug/
