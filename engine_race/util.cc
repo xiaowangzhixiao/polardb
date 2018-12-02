@@ -3,6 +3,7 @@
 //
 #include <unistd.h>
 #include "util.h"
+#include <iostream>
 
 namespace polar_race {
     bool FileExists(const std::string& path) {
