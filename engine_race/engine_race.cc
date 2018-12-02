@@ -212,7 +212,7 @@ namespace polar_race {
             std::cout << thread_id <<std::endl;
             int record =0;
             while (_waiting) {
-                if (record++ >10000) {
+                if (record++ >100000) {
 //                    exit(-1);
                     break;
                 }
@@ -222,12 +222,17 @@ namespace polar_race {
         std::cout << thread_id<<" "<<_waiting<<std::endl;
         _waiting = false;
 
+        if(_container!=64) {
+            for (int i = 0; i < BUCKET_NUM; ++i) {
+                partition[i].shard_num = 1;
+            }
+        }
         // 2. 开始读
-//        prefetch(visitor, thread_id);
+        prefetch(visitor, thread_id);
 
         int count = 0;
         while (_range_count <=THREAD_NUM-1 ) {
-            if (count++>10000) {
+            if (count++>100000) {
                 break;
             }
             usleep(2);
