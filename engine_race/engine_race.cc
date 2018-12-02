@@ -59,6 +59,7 @@ namespace polar_race {
             info.engineRace->partition[index].valueLog.init(info.engineRace->_dir, index);
             info.engineRace->partition[index].metaLog.init(info.engineRace->_dir, index);
         }
+        std::cout <<"init meta, thread id:" + std::to_string(info.id)  + "\n";
     }
 
     struct PreRange {
