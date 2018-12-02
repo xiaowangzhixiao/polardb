@@ -170,21 +170,16 @@ void randomRead(Engine* engine, const threadsafe_vector<std::string>& keys, unsi
 class MyVisitor : public Visitor
 {
 public:
-    MyVisitor(const threadsafe_vector<std::string>& keys, unsigned start, unsigned& cnt)
-            : mKeys(keys), mStart(start), mCnt(cnt)
+    MyVisitor(const threadsafe_vector<std::string>& keys, int& cnt)
+            : mKeys(keys), mCnt(cnt)
     {}
 
     ~MyVisitor() {}
 
     void Visit(const PolarString& key, const PolarString& value)
     {
-        //if (key != hash_to_str(fnv1_hash_64(value.ToString()))) {
         if (key != key_from_value(value.ToString())) {
             std::cout << "Sequential Read error: key and value not match" << std::endl;
-            exit(-1);
-        }
-        if (key != mKeys[mStart + mCnt]) {
-            std::cout << "Sequential Read error: not an expected key" << std::endl;
             exit(-1);
         }
         mCnt += 1;
@@ -193,54 +188,16 @@ public:
 private:
     const threadsafe_vector<std::string>& mKeys;
     unsigned mStart;
-    unsigned& mCnt;
+    int& mCnt;
 };
 
-void sequentialRead(Engine* engine, const threadsafe_vector<std::string>& keys)
-{
-    RandNum_generator rng(0, keys.size() - 1);
-    RandNum_generator rng1(10, 100);
-
-    unsigned lenKeys = keys.size();
-    // Random ranges
-    unsigned lenAccu = 0;
-    while (lenAccu < lenKeys) {
-        std::string lower, upper;
-
-        unsigned start = rng.nextNum();
-        lower = keys[start];
-
-        unsigned len = rng1.nextNum();
-        if (start + len >= lenKeys) {
-            len = lenKeys - start;
-        }
-        if (start + len == lenKeys) {
-            upper = "";
-        } else {
-            upper = keys[start + len];
-        }
-
-        unsigned keyCnt = 0;
-        MyVisitor visitor(keys, start, keyCnt);
-        engine->Range(lower, upper, visitor);
-        if (keyCnt != len) {
-            std::cout << "Range size not match, expected: " << len
-                      << " actual: " << keyCnt << std::endl;
-            exit(-1);
-        }
-
-        lenAccu += len;
-    }
-
-    // Whole range traversal
-    unsigned keyCnt = 0;
-    MyVisitor visitor(keys, 0, keyCnt);
+void sequentialRead(Engine *engine, const threadsafe_vector<std::string> &keys) {
+    int keyCnt = 0;
+    MyVisitor visitor(keys, keyCnt);
     engine->Range("", "", visitor);
-    if (keyCnt != lenKeys) {
-        std::cout << "Range size not match, expected: " << lenKeys
-                  << " actual: " << keyCnt << std::endl;
-        exit(-1);
-    }
+    std::string range_over = "range over, the key sum: ";
+    range_over.append(std::to_string(keyCnt));
+    std::cout << range_over<<std::endl;
 }
 
 /*int main() {
@@ -282,6 +239,8 @@ void sequentialRead(Engine* engine, const threadsafe_vector<std::string>& keys)
     int index = binary_search(_table, size/16, key_int);
     std::cout<<key_int <<'\t'<< index <<std::endl;
 }*/
+
+
 int main()
 {
     auto numThreads = std::thread::hardware_concurrency();
@@ -292,7 +251,7 @@ int main()
     threadsafe_vector<std::string> keys;
 
     // Write
-    /*unsigned numWrite = 10000, numKills = 4;
+    unsigned numWrite = 10000, numKills = 4;
     double duration = 0;
     for (int nk = 0; nk < numKills; ++nk) {
         RetCode ret = Engine::Open(kEnginePath, &engine);
@@ -319,6 +278,7 @@ int main()
               << duration
               << " milliseconds" << std::endl;
 
+     /*
 
     RetCode ret = Engine::Open(kEnginePath, &engine);
     assert (ret == kSucc);

@@ -8,7 +8,7 @@
 
 namespace polar_race {
 
-    ValueLog::ValueLog():_offset(0),_fd(-1) {
+    ValueLog::ValueLog():_offset(0),_fd(-1),_firstRead(true),_loading(false) {
 
     }
 
@@ -69,4 +69,39 @@ namespace polar_race {
 
         return kSucc;
     }
+
+    /**
+    * 读取所有的val值
+    * @return
+    */
+    char* ValueLog::findAll() {
+        bool loading = false;
+        _loading.compare_exchange_strong(loading, true);
+        if (!loading) {
+            if (_firstRead) {
+                _val = static_cast<char *>(malloc(_offset * 4096));
+                pread(_fd, _val, _offset * 4096, 0);
+                _firstRead = false;
+            }
+            _loading = false;
+        } else {
+            while (_firstRead) {
+                usleep(5);
+            }
+        }
+        return _val;
+    }
+
+    // 需要原子操作
+    void ValueLog::clear() {
+        mut.lock();
+        if (_val !=NULL) {
+            delete _val;
+            _val = NULL;
+        }
+        _firstRead = true;
+        _loading = false;
+        mut.unlock();
+    }
+
 }

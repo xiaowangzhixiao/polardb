@@ -87,4 +87,30 @@ namespace polar_race {
         location.addr = addr;
         return kSucc;
     }
+
+    /**
+     * 读取的所有数据
+     * @return
+     */
+    Location* MetaLog::findAll() {
+        bool loading = false;
+        _loading.compare_exchange_strong(loading, true);
+        if (!loading) {
+            if (_firstRead){
+                load();
+                _firstRead = false;
+            }
+            _loading = false;
+        } else {
+            while (_firstRead) {
+                usleep(5);
+            }
+        }
+        return _table;
+    }
+
+    int MetaLog::getSize() {
+        return _offset;
+    }
+
 }

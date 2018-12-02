@@ -7,6 +7,8 @@
 #include "partiton.h"
 
 #define BUCKET_NUM 1024
+#define THREAD_NUM 64
+#define THREAD_CAP 16
 
 namespace polar_race {
 
@@ -39,11 +41,16 @@ namespace polar_race {
           const PolarString& upper,
           Visitor &visitor) override;
 
+        void prefetch(Visitor &visitor, int thread_id);
+
+        RetCode close(int thread_id);
+
         Partition partition[BUCKET_NUM];
         std::string _dir;
         std::atomic_bool _waiting;
         std::atomic_int _container;
         std::atomic_int _range_count;
+        pthread_t tids[THREAD_NUM];
     };
 
 }  // namespace polar_race

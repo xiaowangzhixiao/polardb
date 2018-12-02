@@ -13,6 +13,9 @@ namespace polar_race {
     struct Partition {
         ValueLog valueLog;
         MetaLog metaLog;
+        std::atomic_int shard_num;
+        std::atomic_bool read;
+        Partition():shard_num(64), read(false){}
     };
 
 }

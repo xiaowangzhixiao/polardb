@@ -4,6 +4,7 @@
 #include <atomic>
 #include <unistd.h>
 #include "include/engine.h"
+#include <mutex>
 
 namespace polar_race {
 
@@ -14,11 +15,15 @@ namespace polar_race {
         RetCode init(const std::string &dir,int index);
         RetCode append(const PolarString &value, uint32_t &addr);
         RetCode read(const uint32_t &addr, std::string *value);
-
+        char* findAll();
+        void clear();
     private:
         std::atomic_uint_least32_t  _offset;
-
+        std::atomic_bool _firstRead;
+        std::atomic_bool _loading;
+        char* _val;
         int _fd; // 文件描述符
+        std::mutex mut;
     };
 
 }

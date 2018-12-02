@@ -20,6 +20,8 @@ namespace polar_race {
         RetCode init(const std::string &dir, int index);
         RetCode append(const Location &);
         RetCode find(Location &);
+        Location* findAll();
+        int getSize();
     private:
 
         RetCode load();
