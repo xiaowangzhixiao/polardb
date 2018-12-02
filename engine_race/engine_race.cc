@@ -282,35 +282,28 @@ namespace polar_race {
                 _readone = i;
                 continue;
             }
-            std::cout << "get metalog "<<i <<"data size"<<data_size<<std::endl;
+            std::cout << "get metalog "<<i <<" data size"<<data_size<<std::endl;
             Location *p_loc = partition[i].metaLog.findAll();
             std::cout << "get valuelog "<<i <<std::endl;
             char *p_val = partition[i].valueLog.findAll();
             try {
                 int tmp_sum = 0;
                 for (int j=0; j<data_size-1;j++) {
-                    if ((p_loc+j)->key == (p_loc+j+1)->key) {
-                        PolarString pkey((char*)&(p_loc+j+1)->key,8);
-                        int pos = (p_loc+j+1)->addr;
-                        PolarString pval(p_val+pos*4096, 4096);
-                        std::cout << "key:"<<(p_loc+j)->key<<" polar key:"<<pkey.ToString()<<" loc"<<(p_loc+j+1)->addr<<std::endl;
-                        visitor.Visit(pkey, pval);
-                        tmp_sum++;
-                    } else{
+                    std::cout<< j << " key:"<<(p_loc+j)->key<<" loc:"<<(p_loc+j+1)->addr<<std::endl;
+                    if ((p_loc+j)->key != (p_loc+j+1)->key) {
                         PolarString pkey((char*)&(p_loc+j)->key,8);
                         int pos = (p_loc+j)->addr;
                         PolarString pval(p_val+pos*4096, 4096);
+                        std::cout << j << "key:"<<(p_loc+j)->key<<" polar key:"<<pkey.ToString()<<" loc:"<<(p_loc+j)->addr<<std::endl;
                         visitor.Visit(pkey, pval);
                         tmp_sum++;
                     }
                 }
-                if ((p_loc+data_size-2)->key!=(p_loc+data_size-1)->key) {
-                    PolarString pkey((char*)&(p_loc+data_size-1)->key,8);
-                    int pos = (p_loc+data_size-1)->addr;
-                    PolarString pval(p_val+pos*4096, 4096);
-                    visitor.Visit(pkey, pval);
-                    tmp_sum++;
-                }
+                PolarString pkey((char*)&(p_loc+data_size-1)->key,8);
+                int pos = (p_loc+data_size-1)->addr;
+                PolarString pval(p_val+pos*4096, 4096);
+                visitor.Visit(pkey, pval);
+                tmp_sum++;
                 visitorMap[i] = tmp_sum;
             } catch (std::exception e){
                 std::cout << e.what() << std::endl;

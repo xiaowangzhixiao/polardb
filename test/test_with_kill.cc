@@ -12,10 +12,11 @@
 #include <iostream>
 #include <algorithm>
 #include <set>
-//#include <sys/stat.h>
-//#include <sys/fcntl.h>
-//#include <unistd.h>
-//#include <engine_race/util.h>
+#include <sys/stat.h>
+#include <sys/fcntl.h>
+#include <unistd.h>
+#include <engine_race/util.h>
+#include <stdlib.h>
 
 static const char kEnginePath[] = "D:\\competition\\kvdb";
 static const char kDumpPath[] = "/tmp/test_dump";
@@ -200,7 +201,7 @@ void sequentialRead(Engine *engine, const threadsafe_vector<std::string> &keys) 
     std::cout << range_over<<std::endl;
 }
 
-/*int main() {
+int main() {
     std::string path = "D:\\competition\\kvdb\\meta_538";
     struct stat fileInfo{};
     stat(path.c_str(), &fileInfo);
@@ -209,39 +210,45 @@ void sequentialRead(Engine *engine, const threadsafe_vector<std::string> &keys) 
     int _fd = open(path.c_str(), O_RDWR | O_CREAT, 0644);
     Location *_table = static_cast<Location *>(malloc(size));
     pread(_fd, _table, size, 0);
-    std::cout << _table[0].key << '\t' <<_table[0].addr <<std::endl;
     std::cout << "now merge" <<std::endl;
 
-    auto mgst = std::chrono::high_resolution_clock::now();
     merge_sort(_table, size/16);
-    auto mged = std::chrono::high_resolution_clock::now();
-    std::cout << std::chrono::duration<double, std::milli>(mged - mgst).count()<<std::endl;
 
     std::cout << "traversal merge array"<<std::endl;
     uint64_t tmp = _table[0].key;
+    Location *p_loc = new Location[24];
     for (int i=0;i<size/16;i++) {
         std::cout << "index: " <<i<< " key: "<<_table[i].key << " loc: "<<_table[i].addr<<std::endl;
         if (tmp > _table[i].key) {
             std::cout << "traversal error" << std::endl;
         }
         tmp = _table[i].key;
+        p_loc[2*i].key = _table[i].key;
+        p_loc[2*i].addr = _table[i].addr;
+        p_loc[2*i+1].key = _table[i].key;
+        p_loc[2*i+1].addr = _table[i].addr;
     }
 
-    std::cout << "query the key"<<std::endl;
-    uint64_t key_int = 7103332137664683142;
-    for (int i=0;i<size/16;i++) {
-        if (_table[i].key == key_int) {
-            std::cout << "index: " <<i<< " key: "<<_table[i].key << " loc: "<<_table[i].addr<<std::endl;
+    std::cout << "traversal the double array"<<std::endl;
+    for (int i=0;i<24;i++) {
+        std::cout << "index: " <<i<< " key: "<<p_loc[i].key << " loc: "<<p_loc[i].addr<<std::endl;
+    }
+
+    std::cout << "\n\nduplicate"<<std::endl;
+    for (int j=0; j<24-1;j++) {
+        if ((p_loc+j)->key != (p_loc+j+1)->key) {
+            PolarString pkey((char*)&(p_loc+j)->key,8);
+            int pos = (p_loc+j)->addr;
+            std::cout << "key:"<<(p_loc+j)->key<<" polar key:"<<pkey.ToString()<<" loc:"<<(p_loc+j)->addr<<std::endl;
         }
     }
+    PolarString pkey((char*)&(p_loc+24-1)->key,8);
+    int pos = (p_loc+24-1)->addr;
+    std::cout << "key:"<<(p_loc+24-1)->key<<" polar key:"<<pkey.ToString()<<" loc:"<<(p_loc+24-1)->addr<<std::endl;
 
-    std::cout << "binary search"<<std::endl;
-    int index = binary_search(_table, size/16, key_int);
-    std::cout<<key_int <<'\t'<< index <<std::endl;
-}*/
+}
 
-
-int main()
+/*int main2()
 {
     auto numThreads = std::thread::hardware_concurrency();
     std::cout << numThreads << std::endl;
@@ -278,7 +285,7 @@ int main()
               << duration
               << " milliseconds" << std::endl;
 
-     /*
+     *//*
 
     RetCode ret = Engine::Open(kEnginePath, &engine);
     assert (ret == kSucc);
@@ -305,7 +312,7 @@ int main()
     auto rreadEnd = std::chrono::high_resolution_clock::now();
     std::cout << "Random read takes: "
               << std::chrono::duration<double, std::milli>(rreadEnd - rreadStart).count()
-              << " milliseconds" << std::endl;*/
+              << " milliseconds" << std::endl;*//*
 
 
     // Sequential Read
@@ -330,4 +337,4 @@ int main()
     delete engine;
 
     return 0;
-}
+}*/
