@@ -59,7 +59,7 @@ namespace polar_race {
             info.engineRace->partition[index].valueLog.init(info.engineRace->_dir, index);
             info.engineRace->partition[index].metaLog.init(info.engineRace->_dir, index);
         }
-        std::cout <<"init meta, thread id:" + std::to_string(info.id)  + "\n";
+//        std::cout <<"init meta, thread id:" + std::to_string(info.id)  + "\n";
     }
 
     struct PreRange {
@@ -148,9 +148,11 @@ namespace polar_race {
             return retCode;
         }
 //        std::cout << "write index:" << index << " addr:" << location.addr << std::endl;
-        if (location.addr % 10000 == 0) {
-            std::cout << "write index:" << index << " addr:" << location.addr << std::endl;
-        }
+//        if (location.addr % 10000 == 0) {
+        std::string msg = "index:";
+        msg.append(std::to_string(index)).append(" key:").append(std::to_string(location.key)).append(" addr").append(std::to_string(location.addr));
+        std::cout << msg <<std::endl;
+//        }
         // 3
         retCode = part.metaLog.append(location);
 
@@ -183,9 +185,9 @@ namespace polar_race {
             return retCode;
         }
 
-        if (location.addr % 11111 == 0) {
-            std::cout << "read index:" + std::to_string(index) + " addr:" + std::to_string(location.addr) + "\n";
-        }
+//        if (location.addr % 11111 == 0) {
+//            std::cout << "read index:" + std::to_string(index) + " addr:" + std::to_string(location.addr) + "\n";
+//        }
         // 3
         value->clear();
         retCode = part.valueLog.read(location.addr, value);
@@ -289,12 +291,12 @@ namespace polar_race {
             try {
                 int tmp_sum = 0;
                 for (int j=0; j<data_size-1;j++) {
-                    std::cout<< j << " key:"<<(p_loc+j)->key<<" loc:"<<(p_loc+j+1)->addr<<std::endl;
+                    std::cout<< j << " key:"<<(p_loc+j)->key<<" loc:"<<(p_loc+j)->addr<<std::endl;
                     if ((p_loc+j)->key != (p_loc+j+1)->key) {
                         PolarString pkey((char*)&(p_loc+j)->key,8);
                         int pos = (p_loc+j)->addr;
                         PolarString pval(p_val+pos*4096, 4096);
-                        std::cout << j << "key:"<<(p_loc+j)->key<<" polar key:"<<pkey.ToString()<<" loc:"<<(p_loc+j)->addr<<std::endl;
+                        std::cout << j << " key:"<<(p_loc+j)->key<<" polar key:"<<pkey.ToString()<<" loc:"<<(p_loc+j)->addr<<std::endl;
                         visitor.Visit(pkey, pval);
                         tmp_sum++;
                     }
