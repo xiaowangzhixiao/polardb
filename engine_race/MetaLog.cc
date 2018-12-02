@@ -19,15 +19,10 @@ namespace polar_race {
 
     RetCode MetaLog::load() {
         // 插入skiplist准备读取
-        for (int i = 0; i < _offset; ++i) {
-            Location location{};
-            if (pread(_fd, &location, 12, i*12) < 0) {
-                perror("read meta file failed");
-                return kIOError;
-            }
-//            _table[location.key] = location.addr;
-            _table.addOrUpdate(location.key, location.addr);
-        }
+        std::cout <<"loading data \n";
+        _table = static_cast<Location *>(malloc(_offset * 16));
+        pread(_fd, _table, _offset*16, 0);
+        merge_sort(_table, _offset);
         return kSucc;
     }
 
@@ -87,8 +82,12 @@ namespace polar_race {
         }
 
 
-        retCode = _table.find(location.key, location.addr);
-
+        std::cout << "binary search"<<std::endl;
+        int addr = binary_search(_table, _offset, location.key);
+        if (addr == -1) {
+            return kNotFound;
+        }
+        location.addr = addr;
         return retCode;
     }
 }

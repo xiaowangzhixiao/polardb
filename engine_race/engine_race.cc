@@ -95,11 +95,6 @@ namespace polar_race {
             }
         }
 
-//        for (int i = 0; i < BUCKET_NUM; ++i) {
-//            engine_race->partition[i].valueLog.init(engine_race->_dir, i);
-//            engine_race->partition[i].metaLog.init(engine_race->_dir, i);
-//        }
-
         std::cout << "open success" << std::endl;
 
         *eptr = engine_race;
@@ -108,6 +103,7 @@ namespace polar_race {
 
     // 2. Close engine
     EngineRace::~EngineRace() {
+        std::cout << "engine close" << std::endl;
     }
 
     // 3. Write a key-value pair into engine
