@@ -148,7 +148,7 @@ namespace polar_race {
             return retCode;
         }
 //        std::cout << "write index:" << index << " addr:" << location.addr << std::endl;
-        if (location.addr % 1000 == 0) {
+        if (location.addr % 10000 == 0) {
             std::cout << "write index:" << index << " addr:" << location.addr << std::endl;
         }
         // 3
@@ -183,7 +183,7 @@ namespace polar_race {
             return retCode;
         }
 
-        if (location.addr % 1111 == 0) {
+        if (location.addr % 11111 == 0) {
             std::cout << "read index:" + std::to_string(index) + " addr:" + std::to_string(location.addr) + "\n";
         }
         // 3
@@ -282,11 +282,10 @@ namespace polar_race {
                 _readone = i;
                 continue;
             }
-            std::cout << "get metalog "<<i <<std::endl;
+            std::cout << "get metalog "<<i <<"data size"<<data_size<<std::endl;
             Location *p_loc = partition[i].metaLog.findAll();
-//            std::cout << "get valuelog "<<i <<std::endl;
+            std::cout << "get valuelog "<<i <<std::endl;
             char *p_val = partition[i].valueLog.findAll();
-//            std::cout << "shard "<<i <<std::endl;
             try {
                 int tmp_sum = 0;
                 for (int j=0; j<data_size-1;j++) {
@@ -294,6 +293,7 @@ namespace polar_race {
                         PolarString pkey((char*)&(p_loc+j+1)->key,8);
                         int pos = (p_loc+j+1)->addr;
                         PolarString pval(p_val+pos*4096, 4096);
+                        std::cout << "key:"<<(p_loc+j)->key<<" polar key:"<<pkey.ToString()<<" loc"<<(p_loc+j+1)->addr<<std::endl;
                         visitor.Visit(pkey, pval);
                         tmp_sum++;
                     } else{
@@ -319,7 +319,7 @@ namespace polar_race {
             partition[i].shard_num.fetch_sub(1);
             _readone = i;
         }
-/*        int storeSum = 0;
+        int storeSum = 0;
         int visitorSum = 0;
         std::string result;
         for (int i=0;i<1024;i++) {
@@ -331,7 +331,7 @@ namespace polar_race {
             }
         }
         result.append("\nstore key sum:").append(std::to_string(storeSum)).append(" visitor sum:").append(std::to_string(visitorSum));
-        std::cout <<result <<std::endl;*/
+        std::cout <<result <<std::endl;
 
         close(thread_id);
         if (thread_id == THREAD_NUM-1) {  // 保留最后一个分片数据
