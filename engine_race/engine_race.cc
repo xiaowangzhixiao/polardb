@@ -159,12 +159,10 @@ namespace polar_race {
         index = getIndex(key);
         Partition & part = partition[index];
 
-
-
         // 2
         retCode = part.metaLog.find(location);
         if (retCode != kSucc) {
-            std::cout << " not found\n";
+            std::cout << " not found "<<location.key<<", index"<<index;
             return retCode;
         }
 

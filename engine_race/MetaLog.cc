@@ -19,7 +19,6 @@ namespace polar_race {
 
     RetCode MetaLog::load() {
         // 插入skiplist准备读取
-        std::cout <<"loading data \n";
         _table = static_cast<Location *>(malloc(_offset * 16));
         pread(_fd, _table, _offset*16, 0);
         merge_sort(_table, _offset);
@@ -35,7 +34,7 @@ namespace polar_race {
                 perror(("get size failed" + filename).c_str());
                 return kIOError;
             }
-            _offset = fileInfo.st_size / 12;
+            _offset = fileInfo.st_size / 16;
             _fd = open(filename.c_str(), O_RDWR);
             if (_fd < 0) {
                 perror(("recover file " + filename + " failed\n").c_str());
@@ -58,7 +57,7 @@ namespace polar_race {
     }
 
     RetCode MetaLog::append(const Location &location) {
-        if (pwrite(_fd, &location, 12, (__off_t)_offset * 12) < 0) {
+        if (pwrite(_fd, &location, 16, (__off_t)_offset * 16) < 0) {
             return kIOError;
         }
         _offset++;
@@ -81,13 +80,11 @@ namespace polar_race {
             }
         }
 
-
-        std::cout << "binary search"<<std::endl;
         int addr = binary_search(_table, _offset, location.key);
         if (addr == -1) {
             return kNotFound;
         }
         location.addr = addr;
-        return retCode;
+        return kSucc;
     }
 }

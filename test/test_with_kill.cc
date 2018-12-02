@@ -12,6 +12,10 @@
 #include <iostream>
 #include <algorithm>
 #include <set>
+//#include <sys/stat.h>
+//#include <sys/fcntl.h>
+//#include <unistd.h>
+//#include <engine_race/util.h>
 
 static const char kEnginePath[] = "D:\\competition\\kvdb";
 static const char kDumpPath[] = "/tmp/test_dump";
@@ -157,7 +161,7 @@ void randomRead(Engine* engine, const threadsafe_vector<std::string>& keys, unsi
         engine->Read(key, &val);
         //if (key != hash_to_str(fnv1_hash_64(val))) {
         if (key != key_from_value(val)) {
-            std::cout << "Random Read error: key and value not match" << std::endl;
+            std::cout << "key and value not match:" <<key << std::endl;
             exit(-1);
         }
     }
@@ -239,6 +243,45 @@ void sequentialRead(Engine* engine, const threadsafe_vector<std::string>& keys)
     }
 }
 
+/*int main() {
+    std::string path = "D:\\competition\\kvdb\\meta_538";
+    struct stat fileInfo{};
+    stat(path.c_str(), &fileInfo);
+    int size = fileInfo.st_size;
+    std::cout << "file size:" << fileInfo.st_size <<std::endl;
+    int _fd = open(path.c_str(), O_RDWR | O_CREAT, 0644);
+    Location *_table = static_cast<Location *>(malloc(size));
+    pread(_fd, _table, size, 0);
+    std::cout << _table[0].key << '\t' <<_table[0].addr <<std::endl;
+    std::cout << "now merge" <<std::endl;
+
+    auto mgst = std::chrono::high_resolution_clock::now();
+    merge_sort(_table, size/16);
+    auto mged = std::chrono::high_resolution_clock::now();
+    std::cout << std::chrono::duration<double, std::milli>(mged - mgst).count()<<std::endl;
+
+    std::cout << "traversal merge array"<<std::endl;
+    uint64_t tmp = _table[0].key;
+    for (int i=0;i<size/16;i++) {
+        std::cout << "index: " <<i<< " key: "<<_table[i].key << " loc: "<<_table[i].addr<<std::endl;
+        if (tmp > _table[i].key) {
+            std::cout << "traversal error" << std::endl;
+        }
+        tmp = _table[i].key;
+    }
+
+    std::cout << "query the key"<<std::endl;
+    uint64_t key_int = 7103332137664683142;
+    for (int i=0;i<size/16;i++) {
+        if (_table[i].key == key_int) {
+            std::cout << "index: " <<i<< " key: "<<_table[i].key << " loc: "<<_table[i].addr<<std::endl;
+        }
+    }
+
+    std::cout << "binary search"<<std::endl;
+    int index = binary_search(_table, size/16, key_int);
+    std::cout<<key_int <<'\t'<< index <<std::endl;
+}*/
 int main()
 {
     auto numThreads = std::thread::hardware_concurrency();
