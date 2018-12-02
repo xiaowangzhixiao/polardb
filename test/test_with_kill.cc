@@ -292,7 +292,7 @@ int main()
     threadsafe_vector<std::string> keys;
 
     // Write
-    unsigned numWrite = 10000, numKills = 4;
+    /*unsigned numWrite = 10000, numKills = 4;
     double duration = 0;
     for (int nk = 0; nk < numKills; ++nk) {
         RetCode ret = Engine::Open(kEnginePath, &engine);
@@ -345,25 +345,27 @@ int main()
     auto rreadEnd = std::chrono::high_resolution_clock::now();
     std::cout << "Random read takes: "
               << std::chrono::duration<double, std::milli>(rreadEnd - rreadStart).count()
-              << " milliseconds" << std::endl;
+              << " milliseconds" << std::endl;*/
 
 
     // Sequential Read
-//    auto sreadStart = std::chrono::high_resolution_clock::now();
-//
-//    std::vector<std::thread> sreaders;
-//    for (int i = 0; i < numThreads; ++i) {
-//        sreaders.emplace_back(std::thread(sequentialRead, engine, std::cref(keys)));
-//    }
-//    for (auto& th : sreaders) {
-//        th.join();
-//    }
-//    sreaders.clear();
-//
-//    auto sreadEnd = std::chrono::high_resolution_clock::now();
-//    std::cout << "Sequential read takes: "
-//              << std::chrono::duration<double, std::milli>(sreadEnd - sreadStart).count()
-//              << " milliseconds" << std::endl;
+
+    RetCode ret = Engine::Open(kEnginePath, &engine);
+    auto sreadStart = std::chrono::high_resolution_clock::now();
+
+    std::vector<std::thread> sreaders;
+    for (int i = 0; i < 64; ++i) {
+        sreaders.emplace_back(std::thread(sequentialRead, engine, std::cref(keys)));
+    }
+    for (auto& th : sreaders) {
+        th.join();
+    }
+    sreaders.clear();
+
+    auto sreadEnd = std::chrono::high_resolution_clock::now();
+    std::cout << "Sequential read takes: "
+              << std::chrono::duration<double, std::milli>(sreadEnd - sreadStart).count()
+              << " milliseconds" << std::endl;
 
     delete engine;
 

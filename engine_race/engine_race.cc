@@ -166,10 +166,9 @@ namespace polar_race {
             return retCode;
         }
 
-        std::cout << "read index:" + std::to_string(index) + " addr:" + std::to_string(location.addr) + "\n";
-//        if (location.addr % 1000 == 0) {
-//            std::cout << "write index:" << index << " addr:" << location.addr << std::endl;
-//        }
+        if (location.addr % 1111 == 0) {
+            std::cout << "read index:" + std::to_string(index) + " addr:" + std::to_string(location.addr) + "\n";
+        }
         // 3
         value->clear();
         retCode = part.valueLog.read(location.addr, value);
@@ -190,6 +189,23 @@ namespace polar_race {
     //   Range("", "", visitor)
     RetCode EngineRace::Range(const PolarString& lower, const PolarString& upper,
         Visitor &visitor) {
+        std::cout << "range start "<< lower.ToString() << " end: "<<upper.ToString() << std::endl;
+        int thread_id = 0;
+        if ((thread_id = _container.fetch_add(1)) < THREAD_NUM-1) {
+            // 开启多线程读
+            std::cout << thread_id <<std::endl;
+            while (_waiting) {
+                usleep(2);
+            }
+        }
+        _waiting = false;
+
+        // 2. 开始读
+//        prefetch(visitor, thread_id);
+
+        while (_range_count <THREAD_NUM-1 ) {
+            usleep(2);
+        }
         return kSucc;
     }
 
