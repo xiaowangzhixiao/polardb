@@ -96,7 +96,7 @@ namespace polar_race {
     void ValueLog::clear() {
         mut.lock();
         if (_val !=NULL) {
-            delete _val;
+            free(_val);
             _val = NULL;
         }
         _firstRead = true;

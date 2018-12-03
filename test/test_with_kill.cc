@@ -511,9 +511,9 @@ int main()
     auto sreadStart = std::chrono::high_resolution_clock::now();
 
     std::vector<std::thread> sreaders;
-    for (int i = 0; i < 64; ++i) {
+//    for (int i = 0; i < 64; ++i) {
         sreaders.emplace_back(std::thread(sequentialRead, engine, std::cref(keys)));
-    }
+//    }
     for (auto& th : sreaders) {
         th.join();
     }

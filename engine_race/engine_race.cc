@@ -245,7 +245,97 @@ namespace polar_race {
             }
         }
         // 2. 开始读
-        //prefetch(visitor, thread_id);
+//        prefetch(visitor, thread_id);
+
+        PreRange info;
+        info.engineRace = this;
+
+        int i=0;
+        int _readone = -1;
+        std::map<int, int> storeMap;
+        std::map<int, int> visitorMap;
+
+        while (i<BUCKET_NUM) {
+            if (partition[i].shard_num == 0) {
+                if (i+2 <1024 && partition[i+2].read==false) {
+                    partition[i+2].read = true;
+                    info.shard_id = i+2;
+                    std::string part = "part start: ";
+                    part.append(std::to_string(thread_id)).append(" part: ").append(std::to_string(i));
+                    std::cout << part <<std::endl;
+                    pthread_create(&tids[thread_id], nullptr, PreRead, &info);
+                }
+                i++;
+                continue;
+            }
+            if (i==_readone) {
+                usleep(5);
+                continue;
+            }
+            int data_size = partition[i].metaLog.getSize();
+            storeMap[i] = data_size;
+            if (data_size == 0) {
+                partition[i].shard_num.fetch_sub(1);
+                _readone = i;
+                continue;
+            }
+//            std::cout << "get metalog "<<i <<" data size"<<data_size<<std::endl;
+            Location *p_loc = partition[i].metaLog.findAll();
+//            std::cout << "get valuelog "<<i <<std::endl;
+            char *p_val = partition[i].valueLog.findAll();
+            try {
+                int tmp_sum = 0;
+                char key_ch[8];
+                for (int j=0; j<data_size-1;j++) {
+//                    std::cout<< j << " key:"<<(p_loc+j)->key<<" loc:"<<(p_loc+j)->addr<<std::endl;
+                    if ((p_loc+j)->key != (p_loc+j+1)->key) {
+                        uint2char((p_loc+j)->key, key_ch);
+                        PolarString pkey(key_ch,8);
+                        int pos = (p_loc+j)->addr;
+                        PolarString pval(p_val+pos*4096, 4096);
+                        std::cout << j << " key:"<<(p_loc+j)->key<<" polar key:"<<pkey.ToString()<<" loc:"<<(p_loc+j)->addr<<std::endl;
+                        visitor.Visit(pkey, pval);
+                        tmp_sum++;
+                    }
+                }
+                uint2char((p_loc+data_size-1)->key, key_ch);
+                PolarString pkey(key_ch,8);
+                int pos = (p_loc+data_size-1)->addr;
+                PolarString pval(p_val+pos*4096, 4096);
+                visitor.Visit(pkey, pval);
+                tmp_sum++;
+                visitorMap[i] = tmp_sum;
+            } catch (std::exception e){
+                std::cout << e.what() << std::endl;
+            }
+
+            partition[i].shard_num.fetch_sub(1);
+            _readone = i;
+            if (i==10) {
+                break;
+            }
+        }
+        int storeSum = 0;
+        int visitorSum = 0;
+        std::string result;
+        for (int i=0;i<1024;i++) {
+            storeSum+=storeMap[i];
+            visitorSum+=visitorMap[i];
+            if (storeMap[i] != visitorMap[i]) {
+                result.append(std::to_string(i)).append(" ").append(std::to_string(storeMap[i])).append(" ")
+                        .append(std::to_string(visitorMap[i])).append("; ");
+            }
+        }
+        result.append("\nstore key sum:").append(std::to_string(storeSum)).append(" visitor sum:").append(std::to_string(visitorSum));
+        std::cout <<result <<std::endl;
+
+        close(thread_id);
+        if (thread_id == THREAD_NUM-1) {  // 保留最后一个分片数据
+            partition[BUCKET_NUM-1].read = true;
+            partition[BUCKET_NUM-1].shard_num = 1;
+            partition[BUCKET_NUM-2].valueLog.clear();
+        }
+        _range_count.fetch_add(1);
 
         std::cout << partition[0].shard_num<<" wait "<<_waiting <<std::endl;
         int count = 0;
