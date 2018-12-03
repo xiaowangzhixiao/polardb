@@ -245,7 +245,7 @@ namespace polar_race {
             }
         }
         // 2. 开始读
-//        prefetch(visitor, thread_id);
+        prefetch(visitor, thread_id);
 
         std::cout << partition[0].shard_num<<" wait "<<_waiting <<std::endl;
         int count = 0;
