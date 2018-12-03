@@ -18,7 +18,7 @@
 //#include <engine_race/util.h>
 //#include <stdlib.h>
 
-static const char kEnginePath[] = "D:\\competition\\kvdb";
+static const char kEnginePath[] = "/tmp/test_engine";
 static const char kDumpPath[] = "/tmp/test_dump";
 
 using namespace polar_race;
