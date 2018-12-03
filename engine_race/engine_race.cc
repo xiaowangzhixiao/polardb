@@ -298,10 +298,11 @@ namespace polar_race {
             char *p_val = partition[i].valueLog.findAll();
             try {
                 int tmp_sum = 0;
+                char key_ch[8];
                 for (int j=0; j<data_size-1;j++) {
 //                    std::cout<< j << " key:"<<(p_loc+j)->key<<" loc:"<<(p_loc+j)->addr<<std::endl;
                     if ((p_loc+j)->key != (p_loc+j+1)->key) {
-                        char *key_ch = uint2char((p_loc+j)->key);
+                        uint2char((p_loc+j)->key, key_ch);
                         PolarString pkey(key_ch,8);
                         int pos = (p_loc+j)->addr;
                         PolarString pval(p_val+pos*4096, 4096);
@@ -310,7 +311,7 @@ namespace polar_race {
                         tmp_sum++;
                     }
                 }
-                char *key_ch = uint2char((p_loc+data_size-1)->key);
+                uint2char((p_loc+data_size-1)->key, key_ch);
                 PolarString pkey(key_ch,8);
                 int pos = (p_loc+data_size-1)->addr;
                 PolarString pval(p_val+pos*4096, 4096);

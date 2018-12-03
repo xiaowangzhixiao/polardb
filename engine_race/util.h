@@ -21,7 +21,7 @@ namespace polar_race {
 
     uint64_t str2uint(const PolarString &key);
 
-    char* uint2char(const uint64_t num);
+    void uint2char(const uint64_t num, char ch[] );
 
 }
 

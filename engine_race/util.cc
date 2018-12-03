@@ -95,14 +95,12 @@ namespace polar_race {
         return num;
     }
 
-    char* uint2char(const uint64_t num) {
-        char* ch = static_cast<char *>(malloc(8));
+    void uint2char(const uint64_t num, char ch[]) {
         for (int i=0;i<8;i++) {
             int offset = 64-(i+1)*8;
             int tmp = (num>>offset) & 0XFF;
             ch[i] = (char) (tmp);
         }
-        return ch;
     }
 
 }
