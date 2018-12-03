@@ -166,7 +166,7 @@ namespace polar_race {
 //        std::cout << "write index:" << index << " addr:" << location.addr << std::endl;
 //        if (location.addr % 10000 == 0) {
         std::string msg = "index:";
-        msg.append(std::to_string(index)).append(" key:").append(std::to_string(location.key)).append(" addr").append(std::to_string(location.addr)).append("size ").append(std::to_string(key.size()));
+        msg.append(std::to_string(index)).append(" key:").append(std::to_string(location.key)).append(" addr").append(std::to_string(location.addr));
         std::cout << msg <<std::endl;
 //        }
         // 3
@@ -225,7 +225,7 @@ namespace polar_race {
     RetCode EngineRace::Range(const PolarString& lower, const PolarString& upper,
         Visitor &visitor) {
         std::cout << "range start "<< lower.ToString() << " end: "<<upper.ToString() << std::endl;
-        /*int thread_id = 0;
+        int thread_id = 0;
         if ((thread_id = _container.fetch_add(1)) < THREAD_NUM-1) {
             // 开启多线程读
             std::cout << thread_id <<std::endl;
@@ -246,15 +246,16 @@ namespace polar_race {
             }
         }
         // 2. 开始读
-        prefetch(visitor, thread_id);
+//        prefetch(visitor, thread_id);
 
+        std::cout << partition[0].shard_num<<" wait "<<_waiting <<std::endl;
         int count = 0;
         while (_range_count <=THREAD_NUM-1 ) {
             if (count++>100000) {
                 break;
             }
             usleep(2);
-        }*/
+        }
         return kSucc;
     }
 
