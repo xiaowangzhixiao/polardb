@@ -45,6 +45,7 @@ namespace polar_race {
             duration = std::chrono::duration<double , std::milli>(end-st).count();
             sleep(1);
         }
+        std::cout << "time out exit" <<std::endl;
         exit(-1);
     }
 
@@ -200,9 +201,9 @@ namespace polar_race {
             return retCode;
         }
 
-//        if (location.addr % 11111 == 0) {
-//            std::cout << "read index:" + std::to_string(index) + " addr:" + std::to_string(location.addr) + "\n";
-//        }
+        if (location.addr % 11111 == 0) {
+            std::cout << "read index:" + std::to_string(index) + " addr:" + std::to_string(location.addr) + "\n";
+        }
         // 3
         value->clear();
         retCode = part.valueLog.read(location.addr, value);
@@ -224,7 +225,7 @@ namespace polar_race {
     RetCode EngineRace::Range(const PolarString& lower, const PolarString& upper,
         Visitor &visitor) {
         std::cout << "range start "<< lower.ToString() << " end: "<<upper.ToString() << std::endl;
-        int thread_id = 0;
+        /*int thread_id = 0;
         if ((thread_id = _container.fetch_add(1)) < THREAD_NUM-1) {
             // 开启多线程读
             std::cout << thread_id <<std::endl;
@@ -253,7 +254,7 @@ namespace polar_race {
                 break;
             }
             usleep(2);
-        }
+        }*/
         return kSucc;
     }
 

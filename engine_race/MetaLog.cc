@@ -65,7 +65,6 @@ namespace polar_race {
     }
 
     RetCode MetaLog::find(Location &location) {
-        RetCode retCode;
         bool loading = false;
         _loading.compare_exchange_strong(loading, true);
         if (!loading) {
