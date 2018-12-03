@@ -215,11 +215,7 @@ unsigned long chang2Uint(const PolarString &key) {
     union Str2Uint data;
     size_t size = key.size();
     for (size_t i = 0; i < 8; ++i) {
-        if (i < size) {
-            data.data[i] = key[i];
-        } else {
-            data.data[i] = 0;
-        }
+        data.data[8-i] = key[i];
     }
     return data.key;
 }
@@ -232,7 +228,13 @@ int getIndex(const PolarString &key) {
     }
 }
 
-int main2() {
+int main() {
+    std::string str = "a123456";
+    uint64_t uint_key = chang2Uint(str);
+    uint64_t uint_key2 = str2long(str);
+    std::cout << uint_key <<std::endl;
+    std::cout << uint_key2 <<std::endl;
+
 //    std::string path = "D:\\competition\\kvdb\\meta";
 //    int _fd = open(path.c_str(), O_RDWR | O_CREAT | O_SYNC);
 //
@@ -433,7 +435,7 @@ int main2() {
 
 }
 
-int main()
+int main2()
 {
     auto numThreads = std::thread::hardware_concurrency();
     std::cout << numThreads << std::endl;

@@ -163,12 +163,11 @@ namespace polar_race {
         if (retCode != kSucc) {
             return retCode;
         }
-//        std::cout << "write index:" << index << " addr:" << location.addr << std::endl;
-//        if (location.addr % 10000 == 0) {
-        std::string msg = "index:";
-        msg.append(std::to_string(index)).append(" key:").append(std::to_string(location.key)).append(" addr").append(std::to_string(location.addr));
-        std::cout << msg <<std::endl;
-//        }
+        if (location.addr % 10000 == 0) {
+            std::string msg = "index:";
+            msg.append(std::to_string(index)).append(" key:").append(std::to_string(location.key)).append(" addr").append(std::to_string(location.addr));
+            std::cout << msg <<std::endl;
+        }
         // 3
         retCode = part.metaLog.append(location);
 
@@ -246,7 +245,7 @@ namespace polar_race {
             }
         }
         // 2. 开始读
-//        prefetch(visitor, thread_id);
+        prefetch(visitor, thread_id);
 
         std::cout << partition[0].shard_num<<" wait "<<_waiting <<std::endl;
         int count = 0;
@@ -256,6 +255,7 @@ namespace polar_race {
             }
             usleep(2);
         }
+        std::cout << "_range_count:"<<_range_count <<std::endl;
         return kSucc;
     }
 
