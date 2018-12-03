@@ -9,20 +9,20 @@
 
 namespace polar_race {
 
-    uint64_t chang2Uint(const PolarString &key) {
-        union Str2Uint data;
-        size_t size = key.size();
-        for (size_t i = 0; i < 8; ++i)
-        {
-            if (i<size)
-            {
-                data.data[i] = key[i];
-            }else{
-                data.data[i] = 0;
-            }
-        }
-        return data.key;
-    }
+//    uint64_t chang2Uint(const PolarString &key) {
+//        union Str2Uint data;
+//        size_t size = key.size();
+//        for (size_t i = 0; i < 8; ++i)
+//        {
+//            if (i<size)
+//            {
+//                data.data[i] = key[i];
+//            }else{
+//                data.data[i] = 0;
+//            }
+//        }
+//        return data.key;
+//    }
 
     uint16_t getIndex(const PolarString &key) {
         if (key.size() > 1) {
@@ -138,7 +138,7 @@ namespace polar_race {
         uint16_t index;
 
         // 1
-        location.key = chang2Uint(key);
+        location.key = str2uint(key);
         index = getIndex(key);
         Partition & part = partition[index];
 
@@ -150,7 +150,7 @@ namespace polar_race {
 //        std::cout << "write index:" << index << " addr:" << location.addr << std::endl;
 //        if (location.addr % 10000 == 0) {
         std::string msg = "index:";
-        msg.append(std::to_string(index)).append(" key:").append(std::to_string(location.key)).append(" addr").append(std::to_string(location.addr));
+        msg.append(std::to_string(index)).append(" key:").append(std::to_string(location.key)).append(" addr").append(std::to_string(location.addr)).append("size ").append(std::to_string(key.size()));
         std::cout << msg <<std::endl;
 //        }
         // 3
@@ -174,7 +174,7 @@ namespace polar_race {
         uint16_t index;
 
         // 1
-        location.key = chang2Uint(key);
+        location.key = str2uint(key);
         index = getIndex(key);
         Partition & part = partition[index];
 
@@ -222,7 +222,6 @@ namespace polar_race {
                 usleep(2);
             }
         }
-        std::cout << thread_id<<" "<<_waiting<<std::endl;
         _waiting = false;
 
         if(_container!=64) {
@@ -240,7 +239,6 @@ namespace polar_race {
             }
             usleep(2);
         }
-        std::cout << thread_id<<" "<<_range_count<<std::endl;
         return kSucc;
     }
 
@@ -269,7 +267,6 @@ namespace polar_race {
                     std::cout << part <<std::endl;
                     pthread_create(&tids[thread_id], nullptr, PreRead, &info);
                 }
-//                std::cout << "part end "<<i <<std::endl;
                 i++;
                 continue;
             }
@@ -284,16 +281,17 @@ namespace polar_race {
                 _readone = i;
                 continue;
             }
-            std::cout << "get metalog "<<i <<" data size"<<data_size<<std::endl;
+//            std::cout << "get metalog "<<i <<" data size"<<data_size<<std::endl;
             Location *p_loc = partition[i].metaLog.findAll();
-            std::cout << "get valuelog "<<i <<std::endl;
+//            std::cout << "get valuelog "<<i <<std::endl;
             char *p_val = partition[i].valueLog.findAll();
             try {
                 int tmp_sum = 0;
                 for (int j=0; j<data_size-1;j++) {
-                    std::cout<< j << " key:"<<(p_loc+j)->key<<" loc:"<<(p_loc+j)->addr<<std::endl;
+//                    std::cout<< j << " key:"<<(p_loc+j)->key<<" loc:"<<(p_loc+j)->addr<<std::endl;
                     if ((p_loc+j)->key != (p_loc+j+1)->key) {
-                        PolarString pkey((char*)&(p_loc+j)->key,8);
+                        char *key_ch = uint2char((p_loc+j)->key);
+                        PolarString pkey(key_ch,8);
                         int pos = (p_loc+j)->addr;
                         PolarString pval(p_val+pos*4096, 4096);
                         std::cout << j << " key:"<<(p_loc+j)->key<<" polar key:"<<pkey.ToString()<<" loc:"<<(p_loc+j)->addr<<std::endl;
@@ -301,7 +299,8 @@ namespace polar_race {
                         tmp_sum++;
                     }
                 }
-                PolarString pkey((char*)&(p_loc+data_size-1)->key,8);
+                char *key_ch = uint2char((p_loc+data_size-1)->key);
+                PolarString pkey(key_ch,8);
                 int pos = (p_loc+data_size-1)->addr;
                 PolarString pval(p_val+pos*4096, 4096);
                 visitor.Visit(pkey, pval);
@@ -313,6 +312,9 @@ namespace polar_race {
 
             partition[i].shard_num.fetch_sub(1);
             _readone = i;
+            if (i==10) {
+                break;
+            }
         }
         int storeSum = 0;
         int visitorSum = 0;
