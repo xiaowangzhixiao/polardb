@@ -36,7 +36,22 @@ namespace polar_race {
         return static_cast<int>(key & 0x03FF);
     }
 
+    void* timeout(void *threadid) {
+        std::cout << "time out thread start " << *((int*)threadid) <<std::endl;
+        auto st = std::chrono::high_resolution_clock::now();
+        double duration = 0;
+        while (duration < 600*1000) {
+            auto end = std::chrono::high_resolution_clock::now();
+            duration = std::chrono::duration<double , std::milli>(end-st).count();
+            sleep(1);
+        }
+        exit(-1);
+    }
+
     RetCode Engine::Open(const std::string& name, Engine** eptr) {
+        pthread_t pth;
+        int thread_id = 0;
+        pthread_create(&pth, NULL, timeout, (void*)&thread_id);
         return EngineRace::Open(name, eptr);
     }
 
@@ -250,14 +265,8 @@ namespace polar_race {
         int _readone = -1;
         std::map<int, int> storeMap;
         std::map<int, int> visitorMap;
-        auto st = std::chrono::high_resolution_clock::now();
 
         while (i<BUCKET_NUM) {
-            auto end = std::chrono::high_resolution_clock::now();
-            double du = std::chrono::duration<double , std::milli>(end-st).count();
-            if (du > 180*1000) {
-                break;
-            }
             if (partition[i].shard_num == 0) {
                 if (i+2 <1024 && partition[i+2].read==false) {
                     partition[i+2].read = true;
