@@ -17,6 +17,7 @@
 #include <unistd.h>
 #include <engine_race/util.h>
 #include <stdlib.h>
+#include <algorithm>
 
 static const char kEnginePath[] = "D:\\competition\\kvdb";
 static const char kDumpPath[] = "/tmp/test_dump";
@@ -25,33 +26,30 @@ using namespace polar_race;
 
 class DumpVisitor : public Visitor {
 public:
-    DumpVisitor(int* kcnt)
+    DumpVisitor(int *kcnt)
             : key_cnt_(kcnt) {}
 
     ~DumpVisitor() {}
 
-    void Visit(const PolarString& key, const PolarString& value) {
+    void Visit(const PolarString &key, const PolarString &value) {
         printf("Visit %s --> %s\n", key.data(), value.data());
         (*key_cnt_)++;
     }
 
 private:
-    int* key_cnt_;
+    int *key_cnt_;
 };
 
 
-template <typename T>
-class threadsafe_vector : public std::vector<T>
-{
+template<typename T>
+class threadsafe_vector : public std::vector<T> {
 public:
-    void add(const T& val)
-    {
+    void add(const T &val) {
         std::lock_guard<std::mutex> lock(mMutex);
         this->push_back(val);
     }
 
-    void add(T&& val)
-    {
+    void add(T &&val) {
         std::lock_guard<std::mutex> lock(mMutex);
         this->emplace_back(val);
     }
@@ -60,48 +58,44 @@ private:
     mutable std::mutex mMutex;
 };
 
-class RandNum_generator
-{
+class RandNum_generator {
 private:
-    RandNum_generator(const RandNum_generator&) = delete;
-    RandNum_generator& operator=(const RandNum_generator&) = delete;
+    RandNum_generator(const RandNum_generator &) = delete;
+
+    RandNum_generator &operator=(const RandNum_generator &) = delete;
+
     std::uniform_int_distribution<unsigned> u;
     std::default_random_engine e;
     int mStart, mEnd;
 public:
     // [start, end], inclusive, uniformally distributed
     RandNum_generator(int start, int end)
-            : u(start, end)
-            , e(std::hash<std::thread::id>()(std::this_thread::get_id())
-                + std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now().time_since_epoch()).count())
-            , mStart(start), mEnd(end)
-    {}
+            : u(start, end), e(std::hash<std::thread::id>()(std::this_thread::get_id())
+                               + std::chrono::duration_cast<std::chrono::milliseconds>(
+            std::chrono::high_resolution_clock::now().time_since_epoch()).count()), mStart(start), mEnd(end) {}
 
     // [mStart, mEnd], inclusive
-    unsigned nextNum()
-    {
+    unsigned nextNum() {
         return u(e);
     }
 
     // [0, max], inclusive
-    unsigned nextNum(unsigned max)
-    {
+    unsigned nextNum(unsigned max) {
         return unsigned((u(e) - mStart) / float(mEnd - mStart) * max);
     }
 };
 
-std::string random_str(RandNum_generator& rng, std::size_t strLen)
-{
+std::string random_str(RandNum_generator &rng, std::size_t strLen) {
     std::string rs(strLen, ' ');
-    for (auto& ch : rs) {
+    for (auto &ch : rs) {
         ch = rng.nextNum();
     }
     return rs;
 }
 
 typedef unsigned long long hash64_t;
-hash64_t fnv1_hash_64(const std::string& str)
-{
+
+hash64_t fnv1_hash_64(const std::string &str) {
     static const hash64_t fnv_offset_basis = 14695981039346656037u;
     static const hash64_t fnv_prime = 1099511628211u;
     hash64_t hv = fnv_offset_basis;
@@ -112,8 +106,7 @@ hash64_t fnv1_hash_64(const std::string& str)
     return hv;
 }
 
-std::string hash_to_str(hash64_t hash)
-{
+std::string hash_to_str(hash64_t hash) {
     const int cnt = 8;
     char val[cnt];
     for (int i = 0; i < cnt; ++i) {
@@ -123,8 +116,7 @@ std::string hash_to_str(hash64_t hash)
     return std::string(val, cnt);
 }
 
-std::string key_from_value(const std::string& val)
-{
+std::string key_from_value(const std::string &val) {
     std::string key(8, ' ');
 
     key[0] = val[729];
@@ -139,8 +131,7 @@ std::string key_from_value(const std::string& val)
     return key;
 }
 
-void write(Engine* engine, threadsafe_vector<std::string>& keys, unsigned numWrite)
-{
+void write(Engine *engine, threadsafe_vector<std::string> &keys, unsigned numWrite) {
     RandNum_generator rng(0, 255);
     for (unsigned i = 0; i < numWrite; ++i) {
         std::string val(random_str(rng, 4096));
@@ -153,32 +144,28 @@ void write(Engine* engine, threadsafe_vector<std::string>& keys, unsigned numWri
     }
 }
 
-void randomRead(Engine* engine, const threadsafe_vector<std::string>& keys, unsigned numRead)
-{
+void randomRead(Engine *engine, const threadsafe_vector<std::string> &keys, unsigned numRead) {
     RandNum_generator rng(0, keys.size() - 1);
     for (unsigned i = 0; i < numRead; ++i) {
-        auto& key = keys[rng.nextNum()];
+        auto &key = keys[rng.nextNum()];
         std::string val;
         engine->Read(key, &val);
         //if (key != hash_to_str(fnv1_hash_64(val))) {
         if (key != key_from_value(val)) {
-            std::cout << "key and value not match:" <<key << std::endl;
+            std::cout << "key and value not match:" << key << std::endl;
             exit(-1);
         }
     }
 }
 
-class MyVisitor : public Visitor
-{
+class MyVisitor : public Visitor {
 public:
-    MyVisitor(const threadsafe_vector<std::string>& keys, int& cnt)
-            : mKeys(keys), mCnt(cnt)
-    {}
+    MyVisitor(const threadsafe_vector<std::string> &keys, int &cnt)
+            : mKeys(keys), mCnt(cnt) {}
 
     ~MyVisitor() {}
 
-    void Visit(const PolarString& key, const PolarString& value)
-    {
+    void Visit(const PolarString &key, const PolarString &value) {
         if (key != key_from_value(value.ToString())) {
             std::cout << "Sequential Read error: key and value not match" << std::endl;
             exit(-1);
@@ -187,9 +174,9 @@ public:
     }
 
 private:
-    const threadsafe_vector<std::string>& mKeys;
+    const threadsafe_vector<std::string> &mKeys;
     unsigned mStart;
-    int& mCnt;
+    int &mCnt;
 };
 
 void sequentialRead(Engine *engine, const threadsafe_vector<std::string> &keys) {
@@ -198,11 +185,55 @@ void sequentialRead(Engine *engine, const threadsafe_vector<std::string> &keys) 
     engine->Range("", "", visitor);
     std::string range_over = "range over, the key sum: ";
     range_over.append(std::to_string(keyCnt));
-    std::cout << range_over<<std::endl;
+    std::cout << range_over << std::endl;
+}
+
+union Str2Uint {
+    char data[8];
+    uint64_t key;
+};
+
+uint64_t chang2Uint(const PolarString &key) {
+    union Str2Uint data;
+    size_t size = key.size();
+    for (size_t i = 0; i < 8; ++i) {
+        if (i < size) {
+            data.data[i] = key[i];
+        } else {
+            data.data[i] = 0;
+        }
+    }
+    return data.key;
 }
 
 int main() {
-    std::string path = "D:\\competition\\kvdb\\meta_538";
+    uint64_t u_int = 6647396;
+    std::string pl((char*)&u_int, 8);
+    std::reverse(pl.begin(), pl.end());
+    std::cout << pl <<std::endl;
+    PolarString pstr(pl);
+    std::cout << pstr.ToString() <<std::endl;
+
+
+    std::cout << "测试 uint2char" <<std::endl;
+    char ch[8];
+    uint2char(u_int, ch);
+    PolarString pkey(ch, 8);
+    printf("%s", ch);
+    std::cout << u_int << "#" << pkey.ToString() << std::endl;
+    std::cout << chang2Uint(pkey) <<std::endl;
+
+    std::cout << "测试 str2uint" <<std::endl;
+    char ll[8] = {'\0', '\0', '\0', '\0', '\0', 'e', 'n', 'd'};
+    printf("%s", ll);
+    PolarString testll(ll, 8);
+    std::cout << testll.ToString() <<" "<< testll.size() << std::endl;
+    std::cout << str2uint(testll) <<std::endl;
+    PolarString str("abcdfesg");
+    std::cout << testll.compare(str) <<std::endl;
+
+
+    /*std::string path = "D:\\competition\\kvdb\\meta_538";
     struct stat fileInfo{};
     stat(path.c_str(), &fileInfo);
     int size = fileInfo.st_size;
@@ -244,7 +275,7 @@ int main() {
     }
     PolarString pkey((char*)&(p_loc+24-1)->key,8);
     int pos = (p_loc+24-1)->addr;
-    std::cout << "key:"<<(p_loc+24-1)->key<<" polar key:"<<pkey.ToString()<<" loc:"<<(p_loc+24-1)->addr<<std::endl;
+    std::cout << "key:"<<(p_loc+24-1)->key<<" polar key:"<<pkey.ToString()<<" loc:"<<(p_loc+24-1)->addr<<std::endl;*/
 
 }
 

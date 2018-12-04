@@ -6,6 +6,7 @@
 #include <iostream>
 #include <cstdio>
 #include <map>
+#include <algorithm>
 
 namespace polar_race {
 
@@ -291,7 +292,9 @@ namespace polar_race {
                 for (int j=0; j<data_size-1;j++) {
                     std::cout<< j << " key:"<<(p_loc+j)->key<<" loc:"<<(p_loc+j+1)->addr<<std::endl;
                     if ((p_loc+j)->key != (p_loc+j+1)->key) {
-                        PolarString pkey((char*)&(p_loc+j)->key,8);
+                        std::string tmpstr((char*)&(p_loc+j)->key,8);
+                        std::reverse(tmpstr.begin(), tmpstr.end());
+                        PolarString pkey(tmpstr);
                         int pos = (p_loc+j)->addr;
                         PolarString pval(p_val+pos*4096, 4096);
                         std::cout << j << "key:"<<(p_loc+j)->key<<" polar key:"<<pkey.ToString()<<" loc:"<<(p_loc+j)->addr<<std::endl;
