@@ -292,9 +292,9 @@ namespace polar_race {
                 _readone = i;
                 continue;
             }
-//            std::cout << "get metalog "<<i <<" data size"<<data_size<<std::endl;
+            std::cout << "get metalog "<<i <<" data size"<<data_size<<std::endl;
             Location *p_loc = partition[i].metaLog.findAll();
-//            std::cout << "get valuelog "<<i <<std::endl;
+            std::cout << "get valuelog "<<i <<std::endl;
             char *p_val = partition[i].valueLog.findAll();
             try {
                 int tmp_sum = 0;
@@ -324,9 +324,9 @@ namespace polar_race {
 
             partition[i].shard_num.fetch_sub(1);
             _readone = i;
-            if (i==10) {
-                break;
-            }
+//            if (i==10) {
+//                break;
+//            }
         }
         int storeSum = 0;
         int visitorSum = 0;
