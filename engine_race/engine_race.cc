@@ -6,11 +6,12 @@
 #include <iostream>
 #include <cstdio>
 #include <map>
-#include <algorithm>
+#include <byteswap.h>
+
 
 namespace polar_race {
 
-/*    uint64_t chang2Uint(const PolarString &key) {
+    uint64_t chang2Uint(const PolarString &key) {
         union Str2Uint data;
         size_t size = key.size();
         for (size_t i = 0; i < 8; ++i)
@@ -23,7 +24,7 @@ namespace polar_race {
             }
         }
         return data.key;
-    }*/
+    }
 
     uint16_t getIndex(const PolarString &key) {
         if (key.size() > 1) {
@@ -139,7 +140,7 @@ namespace polar_race {
         uint16_t index;
 
         // 1
-        location.key = str2uint(key);
+        location.key = chang2Uint(key);
         index = getIndex(key);
         Partition & part = partition[index];
 
@@ -173,7 +174,7 @@ namespace polar_race {
         uint16_t index;
 
         // 1
-        location.key = str2uint(key);
+        location.key = chang2Uint(key);
         index = getIndex(key);
         Partition & part = partition[index];
 
@@ -292,13 +293,11 @@ namespace polar_race {
                 for (int j=0; j<data_size-1;j++) {
                     std::cout<< j << " key:"<<(p_loc+j)->key<<" loc:"<<(p_loc+j+1)->addr<<std::endl;
                     if ((p_loc+j)->key != (p_loc+j+1)->key) {
-                        std::string tmpstr((char*)&(p_loc+j)->key,8);
-                        std::reverse(tmpstr.begin(), tmpstr.end());
-//                        PolarString pkey(tmpstr);
+                        PolarString pkey((char*)&(p_loc+j)->key,8);
                         int pos = (p_loc+j)->addr;
                         PolarString pval(p_val+pos*4096, 4096);
-                        std::cout << j << "key:"<<(p_loc+j)->key<<" polar key:"<<tmpstr<<" loc:"<<(p_loc+j)->addr<<std::endl;
-                        visitor.Visit(tmpstr, pval);
+                        std::cout << j << "key:"<<(p_loc+j)->key<<" polar key:"<<pkey.ToString()<<" loc:"<<(p_loc+j)->addr<<std::endl;
+                        visitor.Visit(pkey, pval);
                         tmp_sum++;
                     }
                 }

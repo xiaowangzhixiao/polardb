@@ -18,6 +18,8 @@
 #include <engine_race/util.h>
 #include <stdlib.h>
 #include <algorithm>
+#include <sstream>
+#include <byteswap.h>
 
 static const char kEnginePath[] = "D:\\competition\\kvdb";
 static const char kDumpPath[] = "/tmp/test_dump";
@@ -206,10 +208,42 @@ uint64_t chang2Uint(const PolarString &key) {
     return data.key;
 }
 
+std::string string_to_hex(const std::string& str) //transfer string to hex-string
+{
+    std::string result="0x";
+    std::string tmp;
+    std::stringstream ss;
+    for(int i=0;i<str.size();i++)
+    {
+        ss<<std::hex<<int(str[i])<<std::endl;
+        ss>>tmp;
+        result+=tmp;
+    }
+    return result;
+}
+
+uint16_t getIndex(const PolarString &key) {
+    if (key.size() > 1) {
+        return ((((uint16_t)key[0]) << 2) | (((uint16_t)key[1] >> 6) & 0x3)) & 0x03ff;
+    } else {
+        return (((uint16_t)key[0]) << 2) & 0x03ff;
+    }
+}
+
 int main() {
-    uint64_t u_int = 6647396;
+    std::string str("a1234567");
+    uint64_t u_int = chang2Uint(str);
+    std::cout << str << " "<< u_int <<std::endl;
+    uint64_t ch_int = bswap_64(u_int);
+    std::cout << u_int << " "<< ch_int <<std::endl;
+    PolarString pl((char*)&u_int, 8);
+    std::cout << pl.ToString() <<std::endl;
+
+    /*uint64_t u_int = 6647396;
+    bswap_64(u_int);
+    std::cout << u_int <<std::endl;
     std::string pl((char*)&u_int, 8);
-    std::reverse(pl.begin(), pl.end());
+//    std::reverse(pl.begin(), pl.end());
     std::cout << pl <<std::endl;
     PolarString pstr(pl);
     std::cout << pstr.ToString() <<std::endl;
@@ -230,7 +264,7 @@ int main() {
     std::cout << testll.ToString() <<" "<< testll.size() << std::endl;
     std::cout << str2uint(testll) <<std::endl;
     PolarString str("abcdfesg");
-    std::cout << testll.compare(str) <<std::endl;
+    std::cout << testll.compare(str) <<std::endl;*/
 
 
     /*std::string path = "D:\\competition\\kvdb\\meta_538";
