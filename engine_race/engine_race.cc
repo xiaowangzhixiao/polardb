@@ -294,11 +294,11 @@ namespace polar_race {
                     if ((p_loc+j)->key != (p_loc+j+1)->key) {
                         std::string tmpstr((char*)&(p_loc+j)->key,8);
                         std::reverse(tmpstr.begin(), tmpstr.end());
-                        PolarString pkey(tmpstr);
+//                        PolarString pkey(tmpstr);
                         int pos = (p_loc+j)->addr;
                         PolarString pval(p_val+pos*4096, 4096);
-                        std::cout << j << "key:"<<(p_loc+j)->key<<" polar key:"<<pkey.ToString()<<" loc:"<<(p_loc+j)->addr<<std::endl;
-                        visitor.Visit(pkey, pval);
+                        std::cout << j << "key:"<<(p_loc+j)->key<<" polar key:"<<tmpstr<<" loc:"<<(p_loc+j)->addr<<std::endl;
+                        visitor.Visit(tmpstr, pval);
                         tmp_sum++;
                     }
                 }
