@@ -280,10 +280,10 @@ namespace polar_race {
             char *p_val = partition[i].valueLog.findAll();
             int tmp_sum = 0;
             for (int j = 0; j < data_size - 1; j++) {
-                std::string tmpstr = "";
-                tmpstr.append(std::to_string(j)).append(" key:").append(std::to_string(bswap_64((p_loc + j)->key)))
-                        .append(" loc:").append(std::to_string((p_loc + j + 1)->addr)).append("\n");
-                std::cout << tmpstr;
+//                std::string tmpstr = "";
+//                tmpstr.append(std::to_string(j)).append(" key:").append(std::to_string(bswap_64((p_loc + j)->key)))
+//                        .append(" loc:").append(std::to_string((p_loc + j + 1)->addr)).append("\n");
+//                std::cout << tmpstr;
                 if ((p_loc + j)->key != (p_loc + j + 1)->key) {
                     PolarString pkey((char *) &(p_loc + j)->key, 8);
                     int pos = (p_loc + j)->addr;
