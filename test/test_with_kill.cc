@@ -12,6 +12,7 @@
 #include <iostream>
 #include <algorithm>
 #include <set>
+#include <map>
 //#include <sys/stat.h>
 //#include <sys/fcntl.h>
 //#include <unistd.h>
@@ -228,16 +229,9 @@ int getIndex(const PolarString &key) {
     }
 }
 
-int main2() {
-    std::string str = "a1234567";
-    uint64_t uint_key = chang2Uint(str);
-    uint64_t uint_key2 = str2long(str);
-    PolarString keystr((char*)&uint_key2, 8);
-    PolarString ltsr = long2char(uint_key2);
-    std::cout << uint_key <<std::endl;
-    std::cout << uint_key2 <<std::endl;
-    std::cout << keystr.ToString() <<std::endl;
-    std::cout << ltsr.ToString() <<std::endl;
+int main() {
+    std::map<int, int> storeMap;
+    std::cout << storeMap[102] <<std::endl;
 //    std::string path = "D:\\competition\\kvdb\\meta";
 //    int _fd = open(path.c_str(), O_RDWR | O_CREAT | O_SYNC);
 //
@@ -438,7 +432,7 @@ int main2() {
 
 }
 
-int main()
+int main2()
 {
     auto numThreads = std::thread::hardware_concurrency();
     std::cout << numThreads << std::endl;

@@ -324,11 +324,8 @@ namespace polar_race {
 
             partition[i].shard_num.fetch_sub(1);
             _readone = i;
-//            if (i==10) {
-//                break;
-//            }
         }
-        int storeSum = 0;
+        /*int storeSum = 0;
         int visitorSum = 0;
         std::string result;
         for (int i=0;i<1024;i++) {
@@ -340,7 +337,7 @@ namespace polar_race {
             }
         }
         result.append("\nstore key sum:").append(std::to_string(storeSum)).append(" visitor sum:").append(std::to_string(visitorSum));
-        std::cout <<result <<std::endl;
+        std::cout <<result <<std::endl;*/
 
         close(thread_id);
         if (thread_id == THREAD_NUM-1) {  // 保留最后一个分片数据
