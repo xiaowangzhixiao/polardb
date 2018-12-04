@@ -86,5 +86,22 @@ namespace polar_race {
         return -1;
     }
 
+    uint64_t str2uint(const PolarString &key) {
+        uint64_t num = 0;
+        for (int i = 0; i < 8; ++i) {
+            num <<=8;
+            num |= (key[i]&0XFF);
+        }
+        return num;
+    }
+
+    void uint2char(const uint64_t num, char ch[]) {
+        for (int i=0;i<8;i++) {
+            int offset = 64-(i+1)*8;
+            int tmp = (num>>offset) & 0XFF;
+            ch[i] = (char) (tmp);
+        }
+    }
+
 }
 

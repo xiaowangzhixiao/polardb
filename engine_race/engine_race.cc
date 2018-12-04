@@ -9,7 +9,7 @@
 
 namespace polar_race {
 
-    uint64_t chang2Uint(const PolarString &key) {
+/*    uint64_t chang2Uint(const PolarString &key) {
         union Str2Uint data;
         size_t size = key.size();
         for (size_t i = 0; i < 8; ++i)
@@ -22,7 +22,7 @@ namespace polar_race {
             }
         }
         return data.key;
-    }
+    }*/
 
     uint16_t getIndex(const PolarString &key) {
         if (key.size() > 1) {
@@ -138,7 +138,7 @@ namespace polar_race {
         uint16_t index;
 
         // 1
-        location.key = chang2Uint(key);
+        location.key = str2uint(key);
         index = getIndex(key);
         Partition & part = partition[index];
 
@@ -172,7 +172,7 @@ namespace polar_race {
         uint16_t index;
 
         // 1
-        location.key = chang2Uint(key);
+        location.key = str2uint(key);
         index = getIndex(key);
         Partition & part = partition[index];
 
