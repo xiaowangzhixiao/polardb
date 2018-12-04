@@ -309,7 +309,7 @@ namespace polar_race {
                 tmp_sum++;
                 visitorMap[i] = tmp_sum;
             } catch (std::exception e){
-                std::cout << e.what() << std::endl;
+                std::cout << "try catch "<<e.what() << std::endl;
             }
 
             partition[i].shard_num.fetch_sub(1);
