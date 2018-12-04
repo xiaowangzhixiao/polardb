@@ -12,11 +12,11 @@
 #include <iostream>
 #include <algorithm>
 #include <set>
-#include <sys/stat.h>
-#include <sys/fcntl.h>
-#include <unistd.h>
-#include <engine_race/util.h>
-#include <stdlib.h>
+//#include <sys/stat.h>
+//#include <sys/fcntl.h>
+//#include <unistd.h>
+//#include <engine_race/util.h>
+//#include <stdlib.h>
 #include <algorithm>
 #include <sstream>
 #include <byteswap.h>
@@ -230,14 +230,14 @@ uint16_t getIndex(const PolarString &key) {
     }
 }
 
-int main() {
-    std::string str("a1234567");
-    uint64_t u_int = chang2Uint(str);
-    std::cout << str << " "<< u_int <<std::endl;
-    uint64_t ch_int = bswap_64(u_int);
-    std::cout << u_int << " "<< ch_int <<std::endl;
-    PolarString pl((char*)&u_int, 8);
-    std::cout << pl.ToString() <<std::endl;
+int main2() {
+//    std::string str("a1234567");
+//    uint64_t u_int = chang2Uint(str);
+//    std::cout << str << " "<< u_int <<std::endl;
+//    uint64_t ch_int = bswap_64(u_int);
+//    std::cout << u_int << " "<< ch_int <<std::endl;
+//    PolarString pl((char*)&u_int, 8);
+//    std::cout << pl.ToString() <<std::endl;
 
     /*uint64_t u_int = 6647396;
     bswap_64(u_int);
@@ -313,7 +313,7 @@ int main() {
 
 }
 
-/*int main2()
+int main()
 {
     auto numThreads = std::thread::hardware_concurrency();
     std::cout << numThreads << std::endl;
@@ -350,7 +350,7 @@ int main() {
               << duration
               << " milliseconds" << std::endl;
 
-     *//*
+
 
     RetCode ret = Engine::Open(kEnginePath, &engine);
     assert (ret == kSucc);
@@ -377,18 +377,18 @@ int main() {
     auto rreadEnd = std::chrono::high_resolution_clock::now();
     std::cout << "Random read takes: "
               << std::chrono::duration<double, std::milli>(rreadEnd - rreadStart).count()
-              << " milliseconds" << std::endl;*//*
+              << " milliseconds" << std::endl;
 
 
     // Sequential Read
 
-    RetCode ret = Engine::Open(kEnginePath, &engine);
+//    RetCode ret = Engine::Open(kEnginePath, &engine);
     auto sreadStart = std::chrono::high_resolution_clock::now();
 
     std::vector<std::thread> sreaders;
-    for (int i = 0; i < 64; ++i) {
+//    for (int i = 0; i < 64; ++i) {
         sreaders.emplace_back(std::thread(sequentialRead, engine, std::cref(keys)));
-    }
+//    }
     for (auto& th : sreaders) {
         th.join();
     }
@@ -402,4 +402,4 @@ int main() {
     delete engine;
 
     return 0;
-}*/
+}
