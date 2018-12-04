@@ -3,6 +3,7 @@
 #include <cstdlib>
 #include <sys/stat.h>
 #include <fcntl.h>
+#include <iostream>
 
 #define VALUE_SIZE 4096
 
@@ -95,9 +96,10 @@ namespace polar_race {
     // 需要原子操作
     void ValueLog::clear() {
         mut.lock();
-        if (_val !=NULL) {
+        if (_val != nullptr) {
+            std::cout << "clear" <<std::endl;
             free(_val);
-            _val = NULL;
+            _val = nullptr;
         }
         _firstRead = true;
         _loading = false;
