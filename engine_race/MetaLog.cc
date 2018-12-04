@@ -15,6 +15,10 @@ namespace polar_race {
         if (_fd > 0) {
             close(_fd);
         }
+        if (_table != nullptr) {
+            free(_table);
+            _table = NULL;
+        }
     }
 
     RetCode MetaLog::load() {
