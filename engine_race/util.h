@@ -6,6 +6,7 @@
 #define ENGINE_UTIL_H
 
 #include <string>
+#include <byteswap.h>
 #include "MetaLog.h"
 
 
