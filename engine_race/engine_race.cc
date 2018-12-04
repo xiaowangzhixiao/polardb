@@ -6,6 +6,7 @@
 #include <iostream>
 #include <cstdio>
 #include <map>
+#include <thread>
 #include <byteswap.h>
 
 namespace polar_race {
@@ -75,6 +76,16 @@ namespace polar_race {
         preRange.engineRace->partition[shard_id].valueLog.findAll();
 //        std::cout << pre <<std::endl;
         preRange.engineRace->partition[shard_id - 2].valueLog.clear();
+        std::cout << pre << std::endl;
+    }
+
+    void PreReadWithThread(EngineRace *engineRace, int shard_id) {
+        std::string pre = "pre read value ";
+        pre.append(std::to_string(shard_id));
+//        std::cout << pre <<std::endl;
+        engineRace->partition[shard_id].valueLog.findAll();
+//        std::cout << pre <<std::endl;
+        engineRace->partition[shard_id - 2].valueLog.clear();
         std::cout << pre << std::endl;
     }
 
@@ -242,8 +253,8 @@ namespace polar_race {
     }
 
     void EngineRace::prefetch(Visitor &visitor, int thread_id) {
-        PreRange info;
-        info.engineRace = this;
+//        PreRange info;
+//        info.engineRace = this;
 
         int i = 0;
         int _readone = -1;
@@ -254,11 +265,13 @@ namespace polar_race {
             if (partition[i].shard_num == 0) {
                 if (i + 2 < 1024 && partition[i + 2].read == false) {
                     partition[i + 2].read = true;
-                    info.shard_id = i + 2;
+//                    info.shard_id = i + 2;
                     std::string part = "part start: ";
                     part.append(std::to_string(thread_id)).append(" part: ").append(std::to_string(i));
                     std::cout << part << std::endl;
-                    pthread_create(&tids[thread_id], nullptr, PreRead, &info);
+//                    pthread_create(&tids[thread_id], nullptr, PreRead, &info);
+                    std::thread thread(PreReadWithThread, this, i + 2);
+                    thread.detach();
                 }
                 i++;
                 continue;
