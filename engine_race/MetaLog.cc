@@ -17,7 +17,7 @@ namespace polar_race {
         }
         if (_table != nullptr) {
             free(_table);
-            _table = NULL;
+            _table = nullptr;
         }
     }
 

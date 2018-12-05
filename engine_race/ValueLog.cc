@@ -17,6 +17,10 @@ namespace polar_race {
         if (_fd > 0) {
             close(_fd);
         }
+        if (_val != nullptr) {
+            free(_val);
+            _val = nullptr;
+        }
     }
 
 

@@ -2,7 +2,6 @@
 #include "engine_race.h"
 #include "util.h"
 #include <sys/stat.h>
-#include <pthread.h>
 #include <iostream>
 #include <cstdio>
 #include <map>
@@ -43,48 +42,19 @@ namespace polar_race {
     Engine::~Engine() {
     }
 
-    /*
-     * Complete the functions below to implement you own engine
-     */
-
-    struct ThreadInfo {
-        EngineRace *engineRace;
-        uint8_t id;
-    };
-
-    void *initThread(void *arg) {
-        ThreadInfo info = ((ThreadInfo *) arg)[0];
+    void initThread(EngineRace *engineRace, int thread_id) {
         for (int i = 0; i < BUCKET_NUM / THREAD_NUM; ++i) {
-            uint32_t index = (uint32_t) info.id * (BUCKET_NUM / THREAD_NUM) + i;
-            info.engineRace->partition[index].valueLog.init(info.engineRace->_dir, index);
-            info.engineRace->partition[index].metaLog.init(info.engineRace->_dir, index);
+            uint32_t index = (uint32_t) thread_id * (BUCKET_NUM / THREAD_NUM) + i;
+            engineRace->partition[index].valueLog.init(engineRace->_dir, index);
+            engineRace->partition[index].metaLog.init(engineRace->_dir, index);
         }
-        std::cout <<"init meta, thread id:" + std::to_string(info.id)  + "\n";
-    }
-
-    struct PreRange {
-        EngineRace *engineRace;
-        int shard_id;
-    };
-
-    void *PreRead(void *arg) {
-        PreRange preRange = ((PreRange *) arg)[0];
-        int shard_id = preRange.shard_id;
-        std::string pre = "pre read value ";
-        pre.append(std::to_string(shard_id));
-//        std::cout << pre <<std::endl;
-        preRange.engineRace->partition[shard_id].valueLog.findAll();
-//        std::cout << pre <<std::endl;
-        preRange.engineRace->partition[shard_id - 2].valueLog.clear();
-        std::cout << pre << std::endl;
+        std::cout <<"init meta, thread id:" + std::to_string(thread_id)  + "\n";
     }
 
     void PreReadWithThread(EngineRace *engineRace, int shard_id) {
         std::string pre = "pre read value ";
         pre.append(std::to_string(shard_id));
-//        std::cout << pre <<std::endl;
         engineRace->partition[shard_id].valueLog.findAll();
-//        std::cout << pre <<std::endl;
         engineRace->partition[shard_id - 2].valueLog.clear();
         std::cout << pre << std::endl;
     }
@@ -101,25 +71,13 @@ namespace polar_race {
         // 1. 读取最新metalog文件建立table
         // 2. 恢复valuelog文件offset
 
-        pthread_t a_thread[THREAD_NUM];
-        ThreadInfo info[THREAD_NUM];
-        int res;
+        std::vector<std::thread> initvec;
         for (uint8_t i = 0; i < THREAD_NUM; ++i) {
-            info[i].engineRace = engine_race;
-            info[i].id = i;
-            res = pthread_create(&a_thread[i], nullptr, initThread, &info[i]);
-            if (res != 0) {
-                std::cout << "fail to create thread" << std::endl;
-                return kIncomplete;
-            }
+            initvec.emplace_back(std::thread(initThread, engine_race, i));
         }
 
-        for (uint8_t i = 0; i < THREAD_NUM; ++i) {
-            res = pthread_join(a_thread[i], nullptr);
-            if (res != 0) {
-                std::cout << "fail to join thread" << std::endl;
-                return kIncomplete;
-            }
+        for (auto& th:initvec) {
+            th.join();
         }
 
         std::cout << "open success" << std::endl;
@@ -130,6 +88,9 @@ namespace polar_race {
 
     // 2. Close engine
     EngineRace::~EngineRace() {
+        for (int i = 0; i < 1024; ++i) {
+            partition[i].valueLog.clear();
+        }
         std::cout << "engine close" << std::endl;
     }
 
@@ -269,7 +230,6 @@ namespace polar_race {
                     std::string part = "part start: ";
                     part.append(std::to_string(thread_id)).append(" part: ").append(std::to_string(i));
                     std::cout << part << std::endl;
-//                    pthread_create(&tids[thread_id], nullptr, PreRead, &info);
                     std::thread thread(PreReadWithThread, this, i + 2);
                     thread.detach();
                 }

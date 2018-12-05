@@ -50,7 +50,6 @@ namespace polar_race {
         std::atomic_bool _waiting;
         std::atomic_int _container;
         std::atomic_int _range_count;
-        pthread_t tids[THREAD_NUM];
     };
 
 }  // namespace polar_race
