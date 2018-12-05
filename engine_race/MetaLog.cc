@@ -46,10 +46,6 @@ namespace polar_race {
                 return kIOError;
             }
 
-//            RetCode retCode = load();
-//            _firstRead = false;
-//            std::cout <<"init meta:" + std::to_string(index)  + "\n";
-//            return retCode;
         } else {
             _fd = open(filename.c_str(), O_RDWR | O_CREAT, 0644);
             if (_fd < 0) {
@@ -85,13 +81,6 @@ namespace polar_race {
 
         int addr = binary_search(_table, _offset, location.key);
         if (addr == -1) {
-//            std::string failStr = "";
-//            failStr.append("offset:").append(std::to_string(_offset)).append("search key:").append(std::to_string(location.key)).append("\n");
-//            for (int i = 0; i < _offset; ++i) {
-//                failStr.append("key:").append(std::to_string(_table[i].key)).append(" addr:").append(std::to_string(_table[i].addr)).append("\n");
-//            }
-//            std::cout << failStr;
-//            exit(-1);
             return kNotFound;
         }
         location.addr = addr;
