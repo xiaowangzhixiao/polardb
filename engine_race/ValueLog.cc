@@ -47,6 +47,11 @@ namespace polar_race {
                 perror(("open file " + filename + " failed\n").c_str());
                 return kIOError;
             }
+            int ret = fallocate(_fd, FALLOC_FL_KEEP_SIZE, 0, 256000000);
+            if (ret < 0) {
+                perror("fallocate failed\n");
+                return kIOError;
+            }
             _offset = 0;
         }
 
