@@ -61,7 +61,7 @@ namespace polar_race {
 
     RetCode polar_race::ValueLog::append(const polar_race::PolarString &value, uint32_t &addr) {
         addr = _offset.fetch_add(1);
-        if (addr % 256 == 0) {
+        if (addr % 128 == 0) {
             std::thread th(fsync, _fd);
             th.detach();
         }
