@@ -62,10 +62,9 @@ namespace polar_race {
     }
 
     RetCode MetaLog::append(const Location &location) {
-        if (pwrite(_fd, &location, 16, (__off_t)_offset * 16) < 0) {
+        if (pwrite(_fd, &location, 16, (__off_t)_offset.fetch_add(1) * 16) < 0) {
             return kIOError;
         }
-        _offset++;
         return kSucc;
     }
 
@@ -86,14 +85,14 @@ namespace polar_race {
 
         int addr = binary_search(_table, _offset, location.key);
         if (addr == -1) {
-            std::string failStr = "";
-            failStr.append("offset:").append(std::to_string(_offset)).append("search key:").append(std::to_string(location.key)).append("\n");
-            for (int i = 0; i < _offset; ++i) {
-                failStr.append("key:").append(std::to_string(_table[i].key)).append(" addr:").append(std::to_string(_table[i].addr)).append("\n");
-            }
-            std::cout << failStr;
-            exit(-1);
-//            return kNotFound;
+//            std::string failStr = "";
+//            failStr.append("offset:").append(std::to_string(_offset)).append("search key:").append(std::to_string(location.key)).append("\n");
+//            for (int i = 0; i < _offset; ++i) {
+//                failStr.append("key:").append(std::to_string(_table[i].key)).append(" addr:").append(std::to_string(_table[i].addr)).append("\n");
+//            }
+//            std::cout << failStr;
+//            exit(-1);
+            return kNotFound;
         }
         location.addr = addr;
         return kSucc;
@@ -108,7 +107,7 @@ namespace polar_race {
         _loading.compare_exchange_strong(loading, true);
         if (!loading) {
             if (_firstRead){
-                std::cout << "load data ..."<<_offset <<std::endl;
+//                std::cout << "load data ..."<<_offset <<std::endl;
                 load();
                 _firstRead = false;
             }
