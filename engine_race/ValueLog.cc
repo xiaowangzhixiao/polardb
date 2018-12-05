@@ -62,6 +62,7 @@ namespace polar_race {
         addr = _offset.fetch_add(1);
         if (addr % 256 == 0) {
             std::thread th(fsync, _fd);
+            th.detach();
         }
         if ( pwrite(_fd, value.data(), VALUE_SIZE, ((__off_t)addr)*VALUE_SIZE) < 0 ) {
             return kIOError;
