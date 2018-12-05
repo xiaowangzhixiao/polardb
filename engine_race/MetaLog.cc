@@ -30,7 +30,8 @@ namespace polar_race {
     }
 
     RetCode MetaLog::init(const std::string &dir, int index) {
-        std::string filename = dir + "/meta_" + std::to_string(index);
+        std::string filename = "";
+        filename.append(dir).append("/meta_").append(std::to_string(index));
         if (FileExists(filename)) {
             //恢复
             struct stat fileInfo{};
@@ -45,10 +46,10 @@ namespace polar_race {
                 return kIOError;
             }
 
-            RetCode retCode = load();
-            _firstRead = false;
+//            RetCode retCode = load();
+//            _firstRead = false;
 //            std::cout <<"init meta:" + std::to_string(index)  + "\n";
-            return retCode;
+//            return retCode;
         } else {
             _fd = open(filename.c_str(), O_RDWR | O_CREAT, 0644);
             if (_fd < 0) {
@@ -100,6 +101,7 @@ namespace polar_race {
         _loading.compare_exchange_strong(loading, true);
         if (!loading) {
             if (_firstRead){
+//                std::cout << "load data ..." <<std::endl;
                 load();
                 _firstRead = false;
             }

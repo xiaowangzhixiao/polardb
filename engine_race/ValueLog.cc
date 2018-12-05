@@ -26,7 +26,8 @@ namespace polar_race {
 
     RetCode ValueLog::init(const std::string &dir, int index) {
         // 创建或恢复文件
-        std::string filename = dir + "/value_" + std::to_string(index);
+        std::string filename = "";
+        filename.append(dir).append("/value_").append(std::to_string(index));
         if (FileExists(filename)) {
             //恢复
             struct stat fileInfo;

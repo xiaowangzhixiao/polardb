@@ -21,7 +21,7 @@ namespace polar_race {
     public:
         static RetCode Open(const std::string& name, Engine** eptr);
 
-        explicit EngineRace(const std::string& dir):_dir(dir),_waiting(true),_container(0),_range_count(0){
+        explicit EngineRace(const std::string& dir):_dir(dir),_waiting(true),_container(0),_range_count(0), _firstRead(true),_loading(false){
 
         }
 
@@ -50,6 +50,9 @@ namespace polar_race {
         std::atomic_bool _waiting;
         std::atomic_int _container;
         std::atomic_int _range_count;
+        // 第一次读时构建索引
+        std::atomic_bool _firstRead;
+        std::atomic_bool _loading;
     };
 
 }  // namespace polar_race

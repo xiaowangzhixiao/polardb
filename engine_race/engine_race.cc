@@ -51,6 +51,15 @@ namespace polar_race {
         std::cout <<"init meta, thread id:" + std::to_string(thread_id)  + "\n";
     }
 
+    // 第一次读预读
+    void preRead(EngineRace *engineRace, int thread_id) {
+        for (int i = 0; i < BUCKET_NUM / THREAD_NUM; ++i) {
+            uint32_t index = (uint32_t) thread_id * (BUCKET_NUM / THREAD_NUM) + i;
+            engineRace->partition[index].metaLog.findAll();
+        }
+        std::cout <<"pre read, thread id:" + std::to_string(thread_id)  + "\n";
+    }
+
     void PreReadWithThread(EngineRace *engineRace, int shard_id) {
         std::string pre = "pre read value ";
         pre.append(std::to_string(shard_id));
@@ -138,10 +147,31 @@ namespace polar_race {
      * @return
      */
     RetCode EngineRace::Read(const PolarString &key, std::string *value) {
+        bool loading = false;
+        _loading.compare_exchange_strong(loading, true);
+        if (!loading) {
+            if (_firstRead) {
+                std::vector<std::thread> initvec;
+                for (uint8_t i = 0; i < THREAD_NUM; ++i) {
+                    initvec.emplace_back(std::thread(preRead, this, i));
+                }
+
+                for (auto& th:initvec) {
+                    th.join();
+                }
+                std::cout << "pre read over" <<std::endl;
+                _firstRead = false;
+            }
+            _loading = false;
+        } else {
+            while (_firstRead) {
+                usleep(5);
+            }
+        }
+
         Location location{};
         RetCode retCode;
         uint16_t index;
-
         // 1
         location.key = chang2Uint(key);
         index = getIndex(key);
@@ -214,9 +244,6 @@ namespace polar_race {
     }
 
     void EngineRace::prefetch(Visitor &visitor, int thread_id) {
-//        PreRange info;
-//        info.engineRace = this;
-
         int i = 0;
         int _readone = -1;
         std::map<int, int> storeMap;
@@ -226,7 +253,6 @@ namespace polar_race {
             if (partition[i].shard_num == 0) {
                 if (i + 2 < 1024 && partition[i + 2].read == false) {
                     partition[i + 2].read = true;
-//                    info.shard_id = i + 2;
                     std::string part = "part start: ";
                     part.append(std::to_string(thread_id)).append(" part: ").append(std::to_string(i));
                     std::cout << part << std::endl;
