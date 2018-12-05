@@ -47,11 +47,11 @@ namespace polar_race {
                 perror(("open file " + filename + " failed\n").c_str());
                 return kIOError;
             }
-            int ret = fallocate(_fd, FALLOC_FL_KEEP_SIZE, 0, 256000000);
-            if (ret < 0) {
-                perror("fallocate failed\n");
-                return kIOError;
-            }
+//            int ret = fallocate(_fd, FALLOC_FL_KEEP_SIZE, 0, 256000000);
+//            if (ret < 0) {
+//                perror("fallocate failed\n");
+//                return kIOError;
+//            }
             _offset = 0;
         }
 
@@ -60,6 +60,9 @@ namespace polar_race {
 
     RetCode polar_race::ValueLog::append(const polar_race::PolarString &value, uint32_t &addr) {
         addr = _offset.fetch_add(1);
+        if (addr % 256 == 0) {
+            std::thread th(fsync, _fd);
+        }
         if ( pwrite(_fd, value.data(), VALUE_SIZE, ((__off_t)addr)*VALUE_SIZE) < 0 ) {
             return kIOError;
         }
