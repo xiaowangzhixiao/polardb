@@ -118,7 +118,7 @@ namespace polar_race {
         uint16_t index;
 
         // 1
-        location.key = chang2Uint(key);
+        location.key = bswap_64(chang2Uint(key));
         index = getIndex(key);
         Partition &part = partition[index];
 
@@ -173,7 +173,7 @@ namespace polar_race {
         RetCode retCode;
         uint16_t index;
         // 1
-        location.key = chang2Uint(key);
+        location.key = bswap_64(chang2Uint(key));
         index = getIndex(key);
         Partition &part = partition[index];
 
@@ -275,14 +275,16 @@ namespace polar_race {
             int tmp_sum = 0;
             for (int j = 0; j < data_size - 1; j++) {
                 if ((p_loc + j)->key != (p_loc + j + 1)->key) {
-                    PolarString pkey((char *) &(p_loc + j)->key, 8);
+                    uint64_t tmpKey = bswap_64((p_loc + j)->key);
+                    PolarString pkey((char *) &tmpKey, 8);
                     int pos = (p_loc + j)->addr;
                     PolarString pval(p_val + pos * 4096, 4096);
                     visitor.Visit(pkey, pval);
                     tmp_sum++;
                 }
             }
-            PolarString pkey((char *) &(p_loc + data_size - 1)->key, 8);
+            uint64_t tmpKey = bswap_64((p_loc + data_size-1)->key);
+            PolarString pkey((char *) &tmpKey, 8);
             int pos = (p_loc + data_size - 1)->addr;
             PolarString pval(p_val + pos * 4096, 4096);
             visitor.Visit(pkey, pval);

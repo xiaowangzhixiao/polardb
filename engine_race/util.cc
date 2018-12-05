@@ -21,10 +21,10 @@ namespace polar_race {
     void merge_tow_arr(Location A[], Location tmpA[], int l, int r, int r_end) {
         int l_end = r - 1, nums = r_end - l + 1, tmp = l;
         while (l <= l_end && r <= r_end) {
-            uint64_t bwl = bswap_64(A[l].key), bwr = bswap_64(A[r].key);
-            if (bwl < bwr) {
+//            uint64_t bwl = bswap_64(A[l].key), bwr = bswap_64(A[r].key);
+            if (A[l].key < A[r].key) {
                 tmpA[tmp++] = A[l++];
-            } else if (bwl > bwr) {
+            } else if (A[l].key > A[r].key) {
                 tmpA[tmp++] = A[r++];
             } else {
                 if (A[l].addr < A[r].addr) A[l].addr = A[r].addr;
@@ -74,14 +74,14 @@ namespace polar_race {
      */
     int binary_search(Location arr[], int size, uint64_t key) {
         int l = 0, r = size - 1;
-        uint64_t bw_key;
-        key = bswap_64(key);
+//        uint64_t bw_key;
+//        key = bswap_64(key);
         while (l <= r) {
             int mid = (r - l) / 2 + l;
-            bw_key = bswap_64(arr[mid].key);
-            if (bw_key == key) {
+//            bw_key = bswap_64(arr[mid].key);
+            if (arr[mid].key == key) {
                 return arr[mid].addr;
-            } else if (bw_key < key) {
+            } else if (arr[mid].key < key) {
                 l = mid + 1;
             } else {
                 r = mid - 1;
