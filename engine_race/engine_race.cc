@@ -68,11 +68,7 @@ namespace polar_race {
         std::string pre = "pre read value ";
         pre.append(std::to_string(shard_id)).append("\n");
         engineRace->partition[shard_id].valueLog.findAll();
-        int index = shard_id-2, rec = 0;
-        while (index >=0 && rec < 3) {
-            engineRace->partition[index--].valueLog.clear();
-            rec++;
-        }
+        engineRace->partition[shard_id - 2].valueLog.clear();
         std::cout << pre;
     }
 
@@ -220,7 +216,7 @@ namespace polar_race {
         _loading.compare_exchange_strong(loading, true);
         if (!loading) {
             if (_firstRead) {
-                std::cout << "preread before range..." <<std::endl;
+//                std::cout << "preread before range..." <<std::endl;
                 std::vector<std::thread> initvec;
                 for (uint8_t i = 0; i < THREAD_NUM; ++i) {
                     initvec.emplace_back(std::thread(preRead, this, i));
@@ -229,7 +225,7 @@ namespace polar_race {
                 for (auto& th:initvec) {
                     th.join();
                 }
-                std::cout << "pre read over" <<std::endl;
+//                std::cout << "pre read over" <<std::endl;
                 _firstRead = false;
             }
             _loading = false;
@@ -239,7 +235,7 @@ namespace polar_race {
             }
         }
 
-        std::cout << "range start " << lower.ToString() << " end: " << upper.ToString() << std::endl;
+//        std::cout << "range start " << lower.ToString() << " end: " << upper.ToString() << std::endl;
         int thread_id = 0;
         if ((thread_id = _container.fetch_add(1)) < THREAD_NUM - 1) {
             // 开启多线程读
@@ -253,7 +249,7 @@ namespace polar_race {
                 usleep(2);
             }
         }
-        std::cout << thread_id << " " << _waiting << std::endl;
+//        std::cout << thread_id << " " << _waiting << std::endl;
         _waiting = false;
 
         if (_container != 64) {
@@ -271,7 +267,7 @@ namespace polar_race {
             }
             usleep(2);
         }
-        std::cout << thread_id<<" "<<_range_count<<std::endl;
+//        std::cout << thread_id<<" "<<_range_count<<std::endl;
         return kSucc;
     }
 
@@ -292,7 +288,7 @@ namespace polar_race {
                 continue;
             }
             if (i == _readone) {
-                usleep(5);
+                usleep(2);
                 continue;
             }
             int data_size = partition[i].metaLog.getSize();
@@ -329,11 +325,6 @@ namespace polar_race {
         }
 
         close(thread_id);
-        if (thread_id == THREAD_NUM - 1) {  // 保留最后一个分片数据
-            partition[BUCKET_NUM - 1].read = true;
-            partition[BUCKET_NUM - 2].valueLog.clear();
-//            partition[BUCKET_NUM-1].valueLog.clear();
-        }
         _range_count.fetch_add(1);
     }
 
@@ -343,9 +334,11 @@ namespace polar_race {
         clostr.append(std::to_string(thread_id)).append("\n");
         std::cout << clostr;
         for (int i = (thread_id) * THREAD_CAP; i < (thread_id + 1) * THREAD_CAP; i++) {
-            partition[i].read = false;
             partition[i].shard_num = 64;
-//            partition[i].valueLog.clear();
+            if (i!= BUCKET_NUM-1) {
+                partition[i].read = false;
+                partition[i].valueLog.clear();
+            }
         }
         _container = 0;
         _waiting = true;
