@@ -67,8 +67,8 @@ namespace polar_race {
     void PreReadWithThread(EngineRace *engineRace, int shard_id) {
         std::string pre = "pre read value ";
         pre.append(std::to_string(shard_id)).append("\n");
-        engineRace->partition[shard_id].valueLog.findAll();
         engineRace->partition[shard_id - 2].valueLog.clear();
+        engineRace->partition[shard_id].valueLog.findAll();
         std::cout << pre;
     }
 
@@ -239,7 +239,6 @@ namespace polar_race {
         int thread_id = 0;
         if ((thread_id = _container.fetch_add(1)) < THREAD_NUM - 1) {
             // 开启多线程读
-            std::cout << thread_id << std::endl;
             int record = 0;
             while (_waiting) {
                 if (record++ > 10000) {
