@@ -21,6 +21,10 @@ namespace polar_race {
         }
     }
 
+    void MetaLog::readAhread() {
+        readahead(_fd, 0, _offset*16);
+    }
+
     RetCode MetaLog::load() {
         // 插入skiplist准备读取
         _table = static_cast<Location *>(malloc(_offset * 16));

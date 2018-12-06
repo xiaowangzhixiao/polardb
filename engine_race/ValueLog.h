@@ -23,6 +23,8 @@ namespace polar_race {
         std::atomic_bool _loading;
         char* _val;
         int _fd; // 文件描述符
+//        int _cache_fd;  //用于缓存的文件
+//        std::atomic_int_fast8_t _cache_offset;
         std::mutex mut;
     };
 

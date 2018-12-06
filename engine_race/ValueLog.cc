@@ -29,6 +29,8 @@ namespace polar_race {
         // 创建或恢复文件
         std::string filename = "";
         filename.append(dir).append("/value_").append(std::to_string(index));
+//        std::string cachename = "";
+//        cachename.append(dir).append("/cache_").append(std::to_string(index));
         if (FileExists(filename)) {
             //恢复
             struct stat fileInfo;
@@ -53,6 +55,7 @@ namespace polar_race {
 //                perror("fallocate failed\n");
 //                return kIOError;
 //            }
+
             _offset = 0;
         }
 
@@ -61,10 +64,10 @@ namespace polar_race {
 
     RetCode polar_race::ValueLog::append(const polar_race::PolarString &value, uint32_t &addr) {
         addr = _offset.fetch_add(1);
-        if (addr % 512 == 0) {
-            std::thread th(fsync, _fd);
-            th.detach();
-        }
+//        if (addr % 512 == 0) {
+//            std::thread th(fsync, _fd);
+//            th.detach();
+//        }
         if ( pwrite(_fd, value.data(), VALUE_SIZE, ((__off_t)addr)*VALUE_SIZE) < 0 ) {
             return kIOError;
         }

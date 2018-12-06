@@ -55,6 +55,10 @@ namespace polar_race {
     void preRead(EngineRace *engineRace, int thread_id) {
         for (int i = 0; i < BUCKET_NUM / THREAD_NUM; ++i) {
             uint32_t index = (uint32_t) thread_id * (BUCKET_NUM / THREAD_NUM) + i;
+            engineRace->partition[index].metaLog.readAhread();
+        }
+        for (int i = 0; i < BUCKET_NUM / THREAD_NUM; ++i) {
+            uint32_t index = (uint32_t) thread_id * (BUCKET_NUM / THREAD_NUM) + i;
             engineRace->partition[index].metaLog.findAll();
         }
 //        std::cout <<"pre read, thread id:" + std::to_string(thread_id)  + "\n";
