@@ -211,7 +211,30 @@ namespace polar_race {
     //   Range("", "", visitor)
     RetCode EngineRace::Range(const PolarString &lower, const PolarString &upper,
                               Visitor &visitor) {
-        std::cout << "range start " << lower.ToString() << " end: " << upper.ToString() << std::endl;
+
+        bool loading = false;
+        _loading.compare_exchange_strong(loading, true);
+        if (!loading) {
+            if (_firstRead) {
+                std::cout << "preread before range..." <<std::endl;
+                std::vector<std::thread> initvec;
+                for (uint8_t i = 0; i < THREAD_NUM; ++i) {
+                    initvec.emplace_back(std::thread(preRead, this, i));
+                }
+
+                for (auto& th:initvec) {
+                    th.join();
+                }
+                std::cout << "pre read over" <<std::endl;
+                _firstRead = false;
+            }
+            _loading = false;
+        } else {
+            while (_firstRead) {
+                usleep(5);
+            }
+        }
+        
         int thread_id = 0;
         if ((thread_id = _container.fetch_add(1)) < THREAD_NUM - 1) {
             // 开启多线程读
@@ -299,20 +322,6 @@ namespace polar_race {
             partition[i].shard_num.fetch_sub(1);
             _readone = i;
         }
-//        int storeSum = 0;
-//        int visitorSum = 0;
-//        std::string result;
-//        for (int i = 0; i < 1024; i++) {
-//            storeSum += storeMap[i];
-//            visitorSum += visitorMap[i];
-//            if (storeMap[i] != visitorMap[i]) {
-//                result.append(std::to_string(i)).append(" ").append(std::to_string(storeMap[i])).append(" ")
-//                        .append(std::to_string(visitorMap[i])).append("; ");
-//            }
-//        }
-//        result.append("\nstore key sum:").append(std::to_string(storeSum)).append(" visitor sum:").append(
-//                std::to_string(visitorSum));
-//        std::cout << result << std::endl;
 
         close(thread_id);
 //        if (thread_id == THREAD_NUM - 1) {  // 保留最后一个分片数据
