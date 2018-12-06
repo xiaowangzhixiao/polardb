@@ -234,7 +234,8 @@ namespace polar_race {
                 usleep(5);
             }
         }
-        
+
+        std::cout << "range start " << lower.ToString() << " end: " << upper.ToString() << std::endl;
         int thread_id = 0;
         if ((thread_id = _container.fetch_add(1)) < THREAD_NUM - 1) {
             // 开启多线程读
