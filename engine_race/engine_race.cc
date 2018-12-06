@@ -68,7 +68,11 @@ namespace polar_race {
         std::string pre = "pre read value ";
         pre.append(std::to_string(shard_id)).append("\n");
         engineRace->partition[shard_id].valueLog.findAll();
-        engineRace->partition[shard_id - 2].valueLog.clear();
+        int index = shard_id-2, rec = 0;
+        while (index >=0 && rec < 3) {
+            engineRace->partition[index--].valueLog.clear();
+            rec++;
+        }
         std::cout << pre;
     }
 
@@ -325,11 +329,11 @@ namespace polar_race {
         }
 
         close(thread_id);
-//        if (thread_id == THREAD_NUM - 1) {  // 保留最后一个分片数据
-//            partition[BUCKET_NUM - 1].read = true;
-//            partition[BUCKET_NUM - 2].valueLog.clear();
+        if (thread_id == THREAD_NUM - 1) {  // 保留最后一个分片数据
+            partition[BUCKET_NUM - 1].read = true;
+            partition[BUCKET_NUM - 2].valueLog.clear();
 //            partition[BUCKET_NUM-1].valueLog.clear();
-//        }
+        }
         _range_count.fetch_add(1);
     }
 
@@ -341,7 +345,7 @@ namespace polar_race {
         for (int i = (thread_id) * THREAD_CAP; i < (thread_id + 1) * THREAD_CAP; i++) {
             partition[i].read = false;
             partition[i].shard_num = 64;
-            partition[i].valueLog.clear();
+//            partition[i].valueLog.clear();
         }
         _container = 0;
         _waiting = true;
