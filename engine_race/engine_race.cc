@@ -45,8 +45,8 @@ namespace polar_race {
     void initThread(EngineRace *engineRace, int thread_id) {
         for (int i = 0; i < BUCKET_NUM / THREAD_NUM; ++i) {
             uint32_t index = (uint32_t) thread_id * (BUCKET_NUM / THREAD_NUM) + i;
-            engineRace->partition[index].valueLog.init(engineRace->_dir, index);
-            engineRace->partition[index].metaLog.init(engineRace->_dir, index);
+            int real_size = engineRace->partition[index].metaLog.init(engineRace->_dir, index);  //返回真正的size
+            engineRace->partition[index].valueLog.init(engineRace->_dir, index, real_size); //初始化value
         }
 //        std::cout <<"init meta, thread id:" + std::to_string(thread_id)  + "\n";
     }
@@ -55,13 +55,12 @@ namespace polar_race {
     void preRead(EngineRace *engineRace, int thread_id) {
         for (int i = 0; i < BUCKET_NUM / THREAD_NUM; ++i) {
             uint32_t index = (uint32_t) thread_id * (BUCKET_NUM / THREAD_NUM) + i;
-            engineRace->partition[index].metaLog.readAhread();
-        }
-        for (int i = 0; i < BUCKET_NUM / THREAD_NUM; ++i) {
-            uint32_t index = (uint32_t) thread_id * (BUCKET_NUM / THREAD_NUM) + i;
+            if(index +1 < (thread_id +1) * (BUCKET_NUM / THREAD_NUM) ){
+                engineRace->partition[index + 1].metaLog.readAhread();
+            }
             engineRace->partition[index].metaLog.findAll();
+            engineRace->partition[index].valueLog.preRead();
         }
-//        std::cout <<"pre read, thread id:" + std::to_string(thread_id)  + "\n";
     }
 
     void PreReadWithThread(EngineRace *engineRace, int shard_id) {
@@ -132,9 +131,9 @@ namespace polar_race {
             return retCode;
         }
 //        std::cout << "write index:" << index << " addr:" << location.addr << std::endl;
-        if (location.addr % 10000 == 0) {
-            std::cout << "write index:" << index << " addr:" << location.addr << std::endl;
-        }
+//        if (location.addr % 10000 == 0) {
+//            std::cout << "write index:" << index << " addr:" << location.addr << std::endl;
+//        }
         // 3
         retCode = part.metaLog.append(location);
 
@@ -184,13 +183,12 @@ namespace polar_race {
         // 2
         retCode = part.metaLog.find(location);
         if (retCode != kSucc) {
-//            std::cout << " not found " << location.key << ", index" << index;
             return retCode;
         }
 
-        if (location.addr % 11111 == 0) {
-            std::cout << "read index:" + std::to_string(index) + " addr:" + std::to_string(location.addr) + "\n";
-        }
+//        if (location.addr % 11111 == 0) {
+//            std::cout << "read index:" + std::to_string(index) + " addr:" + std::to_string(location.addr) + "\n";
+//        }
         // 3
         value->clear();
         retCode = part.valueLog.read(location.addr, value);
@@ -216,7 +214,6 @@ namespace polar_race {
         _loading.compare_exchange_strong(loading, true);
         if (!loading) {
             if (_firstRead) {
-//                std::cout << "preread before range..." <<std::endl;
                 std::vector<std::thread> initvec;
                 for (uint8_t i = 0; i < THREAD_NUM; ++i) {
                     initvec.emplace_back(std::thread(preRead, this, i));
@@ -225,7 +222,6 @@ namespace polar_race {
                 for (auto& th:initvec) {
                     th.join();
                 }
-//                std::cout << "pre read over" <<std::endl;
                 _firstRead = false;
             }
             _loading = false;

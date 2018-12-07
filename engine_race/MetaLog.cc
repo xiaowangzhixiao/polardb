@@ -7,7 +7,7 @@
 
 namespace polar_race {
 
-    MetaLog::MetaLog():_offset(0),_fd(-1), _firstRead(true),_loading(false) {
+    MetaLog::MetaLog():_offset(0),_fd(-1), _firstRead(true),_loading(false),_table(nullptr) {
 
     }
 
@@ -27,13 +27,13 @@ namespace polar_race {
 
     RetCode MetaLog::load() {
         // 插入skiplist准备读取
-        _table = static_cast<Location *>(malloc(_offset * 16));
-        pread(_fd, _table, _offset*16, 0);
+        _table = static_cast<Location *>(malloc(_offset << 4 ));
+        pread(_fd, _table, _offset<<4, 0);
         merge_sort(_table, _offset);
         return kSucc;
     }
 
-    RetCode MetaLog::init(const std::string &dir, int index) {
+    int MetaLog::init(const std::string &dir, int index) {
         std::string filename = "";
         filename.append(dir).append("/meta_").append(std::to_string(index));
         if (FileExists(filename)) {
@@ -43,26 +43,26 @@ namespace polar_race {
                 perror(("get size failed" + filename).c_str());
                 return kIOError;
             }
-            _offset = fileInfo.st_size / 16;
-            _fd = open(filename.c_str(), O_RDWR | O_ASYNC);
+            _offset = fileInfo.st_size >> 4;
+            _fd = open(filename.c_str(), O_RDWR);
             if (_fd < 0) {
                 perror(("recover file " + filename + " failed\n").c_str());
                 return kIOError;
             }
 
         } else {
-            _fd = open(filename.c_str(), O_RDWR | O_CREAT | O_ASYNC, 0644);
+            _fd = open(filename.c_str(), O_RDWR | O_CREAT, 0644);
             if (_fd < 0) {
                 perror(("open file " + filename + " failed\n").c_str());
                 return kIOError;
             }
             _offset = 0;
         }
-        return kSucc;
+        return _offset;
     }
 
     RetCode MetaLog::append(const Location &location) {
-        if (pwrite(_fd, &location, 16, (__off_t)_offset.fetch_add(1) * 16) < 0) {
+        if (pwrite(_fd, &location, 16, (__off_t)_offset.fetch_add(1) << 4) < 0) {
             return kIOError;
         }
         return kSucc;
@@ -100,7 +100,6 @@ namespace polar_race {
         _loading.compare_exchange_strong(loading, true);
         if (!loading) {
             if (_firstRead){
-//                std::cout << "load data ..."<<_offset <<std::endl;
                 load();
                 _firstRead = false;
             }

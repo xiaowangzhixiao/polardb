@@ -121,22 +121,33 @@ std::string hash_to_str(hash64_t hash) {
 std::string key_from_value(const std::string &val) {
     std::string key(8, ' ');
 
-    key[0] = val[729];
-    key[1] = val[839];
-    key[2] = val[25];
-    key[3] = val[202];
-    key[4] = val[579];
-    key[5] = val[1826];
-    key[6] = val[369];
-    key[7] = val[2903];
+    key[0] = val[0];
+    key[1] = val[1];
+    key[2] = val[2];
+    key[3] = val[3];
+    key[4] = val[4];
+    key[5] = val[5];
+    key[6] = val[6];
+    key[7] = val[7];
+
+//    key[0] = val[729];
+//    key[1] = val[839];
+//    key[2] = val[25];
+//    key[3] = val[202];
+//    key[4] = val[579];
+//    key[5] = val[1826];
+//    key[6] = val[369];
+//    key[7] = val[2903];
 
     return key;
 }
 
 void write(Engine *engine, threadsafe_vector<std::string> &keys, unsigned numWrite) {
     RandNum_generator rng(0, 255);
+    std::string tmp_str(4096, 'a');
     for (unsigned i = 0; i < numWrite; ++i) {
-        std::string val(random_str(rng, 4096));
+//        std::string val(random_str(rng, 4096));
+        std::string val = (std::to_string(i)+tmp_str).substr(0, 4096);
 
         //std::string key = hash_to_str(fnv1_hash_64(val)); // strong hash, slow but barely any chance to duplicate
         std::string key(key_from_value(val)); // random positions, faster but tiny chance to duplicate
@@ -231,22 +242,6 @@ uint16_t getIndex(const PolarString &key) {
 }
 
 int main2() {
-    PolarString str("a1234567");
-    PolarString str1("a1234568");
-    uint64_t int_key = bswap_64(chang2Uint(str));
-    uint64_t int_key1 = bswap_64(chang2Uint(str1));
-    std::cout << int_key << " "<<int_key1 <<std::endl;
-    uint64_t tmp_key = bswap_64(int_key);
-    PolarString keyStr((char*)&tmp_key, 8);
-    std::cout << keyStr.ToString() <<std::endl;
-
-//    std::string str("a1234567");
-//    uint64_t u_int = chang2Uint(str);
-//    std::cout << str << " "<< u_int <<std::endl;
-//    uint64_t ch_int = bswap_64(u_int);
-//    std::cout << u_int << " "<< ch_int <<std::endl;
-//    PolarString pl((char*)&u_int, 8);
-//    std::cout << pl.ToString() <<std::endl;
 
     /*uint64_t u_int = 6647396;
     bswap_64(u_int);
@@ -274,7 +269,6 @@ int main2() {
     std::cout << str2uint(testll) <<std::endl;
     PolarString str("abcdfesg");
     std::cout << testll.compare(str) <<std::endl;*/
-
 
     /*std::string path = "D:\\competition\\kvdb\\meta_538";
     struct stat fileInfo{};
@@ -322,7 +316,7 @@ int main2() {
 
 }
 
-int main3()
+int main()
 {
     auto numThreads = std::thread::hardware_concurrency();
     std::cout << numThreads << std::endl;
@@ -332,7 +326,7 @@ int main3()
     threadsafe_vector<std::string> keys;
 
     // Write
-    unsigned numWrite = 10000, numKills = 4;
+    unsigned numWrite = 50, numKills = 2;
     double duration = 0;
     for (int nk = 0; nk < numKills; ++nk) {
         RetCode ret = Engine::Open(kEnginePath, &engine);
