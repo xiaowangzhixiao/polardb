@@ -43,8 +43,8 @@ namespace polar_race {
     }
 
     void initThread(EngineRace *engineRace, int thread_id) {
-        for (int i = 0; i < BUCKET_NUM / THREAD_NUM; ++i) {
-            uint32_t index = (uint32_t) thread_id * (BUCKET_NUM / THREAD_NUM) + i;
+        for (int i = 0; i < THREAD_CAP; ++i) {
+            uint32_t index = (uint32_t) thread_id * THREAD_CAP + i;
             int offset = engineRace->partition[index].valueLog.init(engineRace->_dir, index); //初始化value
             engineRace->partition[index].metaLog.init(engineRace->_dir, index, offset);  //返回真正的size
         }
@@ -53,12 +53,15 @@ namespace polar_race {
 
     // 第一次读预读
     void preRead(EngineRace *engineRace, int thread_id) {
-        for (int i = 0; i < BUCKET_NUM / THREAD_NUM; ++i) {
-            uint32_t index = (uint32_t) thread_id * (BUCKET_NUM / THREAD_NUM) + i;
-            if(index +1 < (thread_id +1) * (BUCKET_NUM / THREAD_NUM) ){
+        for (int i = 0; i < THREAD_CAP; ++i) {
+            uint32_t index = (uint32_t) thread_id * THREAD_CAP + i;
+            if(index +1 < (thread_id +1) * THREAD_CAP ){
                 engineRace->partition[index + 1].metaLog.readAhread();
             }
             engineRace->partition[index].metaLog.findAll();
+            if (index<3) {
+                engineRace->partition[index].metaLog.print();
+            }
 //            int size = engineRace->partition[index].metaLog.getSize();
 //            std::cout <<"index:"+std::to_string(index)+" size:"+std::to_string(size)+"\n";
         }
@@ -166,7 +169,6 @@ namespace polar_race {
                 std::cout << "pre read over" <<std::endl;
                 _firstRead = false;
             }
-            _loading = false;
         } else {
             while (_firstRead) {
                 usleep(5);
@@ -225,7 +227,6 @@ namespace polar_race {
                 }
                 _firstRead = false;
             }
-            _loading = false;
         } else {
             while (_firstRead) {
                 usleep(5);

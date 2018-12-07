@@ -50,12 +50,6 @@ namespace polar_race {
                 perror(("open file " + filename + " failed\n").c_str());
                 return kIOError;
             }
-//            int ret = fallocate(_fd, FALLOC_FL_KEEP_SIZE, 0, 256000000);
-//            if (ret < 0) {
-//                perror("fallocate failed\n");
-//                return kIOError;
-//            }
-
             _offset = 0;
         }
 
@@ -100,7 +94,7 @@ namespace polar_race {
                 pread(_fd, _val, _offset<<12, 0);
                 _firstRead = false;
             }
-            _loading = false;
+//            _loading = false;
         } else {
             while (_firstRead) {
                 usleep(5);

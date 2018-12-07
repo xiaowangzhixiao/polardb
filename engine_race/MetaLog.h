@@ -23,6 +23,7 @@ namespace polar_race {
         void readAhread();
         Location* findAll();
         int getSize();
+        void print();
     private:
 
         RetCode load();

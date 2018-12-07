@@ -10,7 +10,7 @@
 //#define MMAP_SIZE 50*16
 namespace polar_race {
 
-    MetaLog::MetaLog():_offset(0),_fd(-1), _firstRead(true),_loading(false),_table(nullptr),_read_table(nullptr),test_num(0) {
+    MetaLog::MetaLog() : _offset(0), _fd(-1), _firstRead(true), _loading(false), _table(nullptr), _read_table(nullptr) {
 
     }
 
@@ -21,28 +21,23 @@ namespace polar_race {
         if (_read_table != nullptr) {
             free(_read_table);
             _read_table = nullptr;
+            std::cout << "_read_table clear \n";
         }
         if (_table != nullptr) {
             munmap(_table, MMAP_SIZE);
             _table = nullptr;
+            std::cout << "_table ummap \n";
         }
     }
 
     void MetaLog::readAhread() {
-        readahead(_fd, 0, _offset<<4);
+//        readahead(_fd, 0, _offset<<4);
     }
 
     RetCode MetaLog::load() {
-        _read_table = static_cast<Location *>(malloc(_offset << 4 ));
-        pread(_fd, _read_table, _offset<<4, 0);
+        _read_table = static_cast<Location *>(malloc(_offset << 4));
+        pread(_fd, _read_table, _offset << 4, 0);
         merge_sort(_read_table, _offset);
-        if (test_num.fetch_add(1) < 10) {
-            std::cout <<"cout table:"<<test_num<<"\n";
-            for (int i=0;i<_offset;i++) {
-                std::cout <<"key:"<<_table[i].key<<" addr:"<<_table[i].addr<<"\n";
-            }
-            std::cout <<"\n\n";
-        }
         return kSucc;
     }
 
@@ -82,19 +77,6 @@ namespace polar_race {
     }
 
     RetCode MetaLog::find(Location &location) {
-        bool loading = false;
-        _loading.compare_exchange_strong(loading, true);
-        if (!loading) {
-            if (_firstRead){
-                load();
-                _firstRead = false;
-            }
-            _loading = false;
-        } else {
-            while (_firstRead) {
-                usleep(5);
-            }
-        }
         int addr = binary_search(_read_table, _offset, location.key);
         if (addr == -1) {
             return kNotFound;
@@ -107,15 +89,19 @@ namespace polar_race {
      * 读取的所有数据
      * @return
      */
-    Location* MetaLog::findAll() {
+    Location *MetaLog::findAll() {
         bool loading = false;
         _loading.compare_exchange_strong(loading, true);
         if (!loading) {
-            if (_firstRead){
+            if (_firstRead) {
+                if (_table != nullptr) {
+                    munmap(_table, MMAP_SIZE);
+                    _table = nullptr;
+                }
                 load();
                 _firstRead = false;
             }
-            _loading = false;
+//            _loading = false;
         } else {
             while (_firstRead) {
                 usleep(5);
@@ -126,6 +112,13 @@ namespace polar_race {
 
     int MetaLog::getSize() {
         return _offset;
+    }
+
+    void MetaLog::print() {
+        for (int i = 0; i < _offset; i++) {
+            std::cout << "key:" << _table[i].key << " addr:" << _table[i].addr << "\n";
+        }
+        std::cout << "print over\n\n";
     }
 
 }
