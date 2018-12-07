@@ -10,7 +10,7 @@
 
 namespace polar_race {
 
-    ValueLog::ValueLog():_offset(0),_fd(-1),_firstRead(true),_loading(false) {
+    ValueLog::ValueLog():_offset(0),_fd(-1),_firstRead(true),_loading(false),_val(nullptr) {
 
     }
 
@@ -25,7 +25,7 @@ namespace polar_race {
     }
 
 
-    RetCode ValueLog::init(const std::string &dir, int index) {
+    int ValueLog::init(const std::string &dir, int index) {
         // 创建或恢复文件
         std::string filename = "";
         filename.append(dir).append("/value_").append(std::to_string(index));
@@ -39,13 +39,15 @@ namespace polar_race {
                 return kIOError;
             }
             _offset = fileInfo.st_size >> 12;
-            _fd = open(filename.c_str(), O_RDWR | O_ASYNC) ;
+//            _fd = open(filename.c_str(), O_RDWR | O_ASYNC) ;
+            _fd = open(filename.c_str(), O_RDWR ) ;
             if (_fd < 0) {
                 perror(("recover file " + filename + " failed\n").c_str());
                 return kIOError;
             }
         } else {
-            _fd = open(filename.c_str(), O_RDWR | O_CREAT | O_ASYNC, 0644);
+//            _fd = open(filename.c_str(), O_RDWR | O_CREAT | O_ASYNC, 0644);
+            _fd = open(filename.c_str(), O_RDWR | O_CREAT, 0644);
             if (_fd < 0) {
                 perror(("open file " + filename + " failed\n").c_str());
                 return kIOError;
@@ -59,7 +61,7 @@ namespace polar_race {
             _offset = 0;
         }
 
-        return kSucc;
+        return _offset;
     }
 
 

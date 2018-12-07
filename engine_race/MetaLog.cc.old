@@ -4,10 +4,7 @@
 #include <iostream>
 #include <sys/stat.h>
 #include <fcntl.h>
-#include <sys/mman.h>
 
-#define MMAP_SIZE 63252*16
-//#define MMAP_SIZE 50*16
 namespace polar_race {
 
     MetaLog::MetaLog():_offset(0),_fd(-1), _firstRead(true),_loading(false),_table(nullptr) {
@@ -19,26 +16,24 @@ namespace polar_race {
             close(_fd);
         }
         if (_table != nullptr) {
-//            free(_table);
-//            _table = nullptr;
-            munmap(_table, MMAP_SIZE);
+            free(_table);
             _table = nullptr;
         }
     }
 
     void MetaLog::readAhread() {
-//        readahead(_fd, 0, _offset<<4);
+        readahead(_fd, 0, _offset<<4);
     }
 
     RetCode MetaLog::load() {
         // 插入skiplist准备读取
-//        _table = static_cast<Location *>(malloc(_offset << 4 ));
-//        pread(_fd, _table, _offset<<4, 0);
+        _table = static_cast<Location *>(malloc(_offset << 4 ));
+        pread(_fd, _table, _offset<<4, 0);
         merge_sort(_table, _offset);
         return kSucc;
     }
 
-    RetCode MetaLog::init(const std::string &dir, int index, int offset) {
+    RetCode MetaLog::init(const std::string &dir, int index) {
         std::string filename = "";
         filename.append(dir).append("/meta_").append(std::to_string(index));
         if (FileExists(filename)) {
@@ -48,31 +43,28 @@ namespace polar_race {
                 perror(("get size failed" + filename).c_str());
                 return kIOError;
             }
-//            _fd = open(filename.c_str(), O_RDWR | O_ASYNC);
-            _fd = open(filename.c_str(), O_RDWR);
+            _offset = fileInfo.st_size >> 4;
+            _fd = open(filename.c_str(), O_RDWR | O_ASYNC);
             if (_fd < 0) {
                 perror(("recover file " + filename + " failed\n").c_str());
                 return kIOError;
             }
+
         } else {
-//            _fd = open(filename.c_str(), O_RDWR | O_CREAT | O_ASYNC, 0644);
-            _fd = open(filename.c_str(), O_RDWR | O_CREAT, 0644);
+            _fd = open(filename.c_str(), O_RDWR | O_CREAT | O_ASYNC, 0644);
             if (_fd < 0) {
                 perror(("open file " + filename + " failed\n").c_str());
                 return kIOError;
             }
+            _offset = 0;
         }
-        _offset = offset;
-        posix_fallocate(_fd, 0, MMAP_SIZE);
-        _table = static_cast<Location *>(mmap(NULL, MMAP_SIZE, PROT_READ | PROT_WRITE, MAP_SHARED, _fd, 0));
         return kSucc;
     }
 
     RetCode MetaLog::append(const Location &location) {
-        _table[_offset.fetch_add(1)] = location;
-//        if (pwrite(_fd, &location, 16, (__off_t)_offset.fetch_add(1) << 4) < 0) {
-//            return kIOError;
-//        }
+        if (pwrite(_fd, &location, 16, (__off_t)_offset.fetch_add(1) << 4) < 0) {
+            return kIOError;
+        }
         return kSucc;
     }
 

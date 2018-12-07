@@ -12,7 +12,7 @@ namespace polar_race {
     public:
         explicit ValueLog();
         ~ValueLog();
-        RetCode init(const std::string &dir,int index);
+        int init(const std::string &dir,int index);
         RetCode append(const PolarString &value, uint32_t &addr);
         RetCode read(const uint32_t &addr, std::string *value);
         char* findAll();

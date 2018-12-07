@@ -17,9 +17,11 @@
 //#include <unistd.h>
 //#include <engine_race/util.h>
 //#include <stdlib.h>
+//#include <sys/mman.h>
 #include <algorithm>
 #include <sstream>
 #include <byteswap.h>
+#include <fcntl.h>
 
 static const char kEnginePath[] = "C:\\kvdb";
 static const char kDumpPath[] = "/tmp/test_dump";
@@ -315,6 +317,20 @@ int main2() {
     std::cout << "key:"<<(p_loc+24-1)->key<<" polar key:"<<pkey.ToString()<<" loc:"<<(p_loc+24-1)->addr<<std::endl;*/
 
 }
+
+//int main() {
+//    std::string filename("C:\\kvdb\\meta");
+//    int _fd = open(filename.c_str(), O_RDWR|O_CREAT, 0644);
+//    posix_fallocate(_fd, 0, getpagesize());
+//    int* arr = static_cast<int *>(mmap(NULL, getpagesize(), PROT_READ | PROT_WRITE,  MAP_SHARED, _fd, 0));
+//    std::cout << "申请内存大小："<< sizeof(arr) <<std::endl;
+//    *arr = 10;
+//    *(arr+1)=20;
+//    *(arr+2) = 30;
+//    std::cout << arr[2] <<std::endl;
+//    munmap(arr, getpagesize());
+//    close(_fd);
+//}
 
 int main()
 {
