@@ -10,7 +10,7 @@
 //#define MMAP_SIZE 50*16
 namespace polar_race {
 
-    MetaLog::MetaLog():_offset(0),_fd(-1), _firstRead(true),_loading(false),_table(nullptr),test_num(0) {
+    MetaLog::MetaLog():_offset(0),_fd(-1), _firstRead(true),_loading(false),_table(nullptr),_read_table(nullptr),test_num(0) {
 
     }
 
@@ -18,9 +18,11 @@ namespace polar_race {
         if (_fd > 0) {
             close(_fd);
         }
+        if (_read_table != nullptr) {
+            free(_read_table);
+            _read_table = nullptr;
+        }
         if (_table != nullptr) {
-//            free(_table);
-//            _table = nullptr;
             munmap(_table, MMAP_SIZE);
             _table = nullptr;
         }
@@ -31,17 +33,9 @@ namespace polar_race {
     }
 
     RetCode MetaLog::load() {
-        // 插入skiplist准备读取
-//        _table = static_cast<Location *>(malloc(_offset << 4 ));
-//        pread(_fd, _table, _offset<<4, 0);
-        merge_sort(_table, _offset);
-        if(test_num.fetch_add(1)<5) {
-            std::cout << "size:"+std::to_string(_offset)+"\n";
-            for (int i = 0; i < _offset ; ++i) {
-                std::cout << "key:"+std::to_string(_table[i].key) +" addr:"+std::to_string(_table[i].addr)+"\n";
-            }
-            std::cout <<"\n";
-        }
+        _read_table = static_cast<Location *>(malloc(_offset << 4 ));
+        pread(_fd, _read_table, _offset<<4, 0);
+        merge_sort(_read_table, _offset);
         return kSucc;
     }
 
@@ -68,18 +62,15 @@ namespace polar_race {
                 perror(("open file " + filename + " failed\n").c_str());
                 return kIOError;
             }
+            posix_fallocate(_fd, 0, MMAP_SIZE);
+            _table = static_cast<Location *>(mmap(NULL, MMAP_SIZE, PROT_READ | PROT_WRITE, MAP_SHARED, _fd, 0));
         }
         _offset = offset;
-        posix_fallocate(_fd, 0, MMAP_SIZE);
-        _table = static_cast<Location *>(mmap(NULL, MMAP_SIZE, PROT_READ | PROT_WRITE, MAP_SHARED, _fd, 0));
         return kSucc;
     }
 
     RetCode MetaLog::append(const Location &location) {
         _table[_offset.fetch_add(1)] = location;
-//        if (pwrite(_fd, &location, 16, (__off_t)_offset.fetch_add(1) << 4) < 0) {
-//            return kIOError;
-//        }
         return kSucc;
     }
 
@@ -97,7 +88,7 @@ namespace polar_race {
                 usleep(5);
             }
         }
-        int addr = binary_search(_table, _offset, location.key);
+        int addr = binary_search(_read_table, _offset, location.key);
         if (addr == -1) {
             return kNotFound;
         }
@@ -123,7 +114,7 @@ namespace polar_race {
                 usleep(5);
             }
         }
-        return _table;
+        return _read_table;
     }
 
     int MetaLog::getSize() {
