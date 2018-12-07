@@ -29,8 +29,6 @@ namespace polar_race {
         // 创建或恢复文件
         std::string filename = "";
         filename.append(dir).append("/value_").append(std::to_string(index));
-//        std::string cachename = "";
-//        cachename.append(dir).append("/cache_").append(std::to_string(index));
         if (FileExists(filename)) {
             //恢复
             struct stat fileInfo;
@@ -115,7 +113,7 @@ namespace polar_race {
     void ValueLog::clear() {
         mut.lock();
         if (_val != nullptr) {
-//            std::cout << "clear" <<std::endl;
+            std::cout << "clear" <<std::endl;
             free(_val);
             _val = nullptr;
         }

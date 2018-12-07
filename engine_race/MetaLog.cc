@@ -35,6 +35,14 @@ namespace polar_race {
 //        _table = static_cast<Location *>(malloc(_offset << 4 ));
 //        pread(_fd, _table, _offset<<4, 0);
         merge_sort(_table, _offset);
+        std::string msg;
+        for (int i = 0; i < _offset ; ++i) {
+            msg+="key:"+_table[i].key;
+            msg+="addr"+_table[i].addr;
+            msg+=" ";
+        }
+        msg+="\n";
+        std::cout << msg;
         return kSucc;
     }
 
