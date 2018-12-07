@@ -21,12 +21,12 @@ namespace polar_race {
         if (_read_table != nullptr) {
             free(_read_table);
             _read_table = nullptr;
-            std::cout << "_read_table clear \n";
+//            std::cout << "_read_table clear \n";
         }
         if (_table != nullptr) {
             munmap(_table, MMAP_SIZE);
             _table = nullptr;
-            std::cout << "_table ummap \n";
+//            std::cout << "_table ummap \n";
         }
     }
 
@@ -116,7 +116,7 @@ namespace polar_race {
 
     void MetaLog::print() {
         for (int i = 0; i < _offset; i++) {
-            std::cout << "key:" << _table[i].key << " addr:" << _table[i].addr << "\n";
+            std::cout << "key:" << _read_table[i].key << " addr:" << _read_table[i].addr << "\n";
         }
         std::cout << "print over\n\n";
     }

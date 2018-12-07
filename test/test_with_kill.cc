@@ -210,25 +210,24 @@ uint64_t chang2Uint(const PolarString &key) {
     return data.key;
 }
 
-std::string string_to_hex(const std::string& str) //transfer string to hex-string
+std::string string_to_hex(const std::string &str) //transfer string to hex-string
 {
-    std::string result="0x";
+    std::string result = "0x";
     std::string tmp;
     std::stringstream ss;
-    for(int i=0;i<str.size();i++)
-    {
-        ss<<std::hex<<int(str[i])<<std::endl;
-        ss>>tmp;
-        result+=tmp;
+    for (int i = 0; i < str.size(); i++) {
+        ss << std::hex << int(str[i]) << std::endl;
+        ss >> tmp;
+        result += tmp;
     }
     return result;
 }
 
 uint16_t getIndex(const PolarString &key) {
     if (key.size() > 1) {
-        return ((((uint16_t)key[0]) << 2) | (((uint16_t)key[1] >> 6) & 0x3)) & 0x03ff;
+        return ((((uint16_t) key[0]) << 2) | (((uint16_t) key[1] >> 6) & 0x3)) & 0x03ff;
     } else {
-        return (((uint16_t)key[0]) << 2) & 0x03ff;
+        return (((uint16_t) key[0]) << 2) & 0x03ff;
     }
 }
 
@@ -321,8 +320,7 @@ int main2() {
 //    close(_fd);
 //}
 
-int main()
-{
+int main() {
     auto numThreads = std::thread::hardware_concurrency();
     std::cout << numThreads << std::endl;
 
@@ -333,34 +331,34 @@ int main()
     // Write
     unsigned numWrite = 10000, numKills = 4;
     double duration = 0;
-    for (int nk = 0; nk < numKills; ++nk) {
-        RetCode ret = Engine::Open(kEnginePath, &engine);
-        assert (ret == kSucc);
+//    for (int nk = 0; nk < numKills; ++nk) {
+    RetCode ret = Engine::Open(kEnginePath, &engine);
+    assert (ret == kSucc);
 
-        auto writeStart = std::chrono::high_resolution_clock::now();
+    auto writeStart = std::chrono::high_resolution_clock::now();
 
-        std::vector<std::thread> writers;
-        for (int i = 0; i < numThreads; ++i) {
-            writers.emplace_back(std::thread(write, engine, std::ref(keys), numWrite / numKills));
-        }
-        for (auto& th : writers) {
-            th.join();
-        }
-        writers.clear();
-
-        auto writeEnd = std::chrono::high_resolution_clock::now();
-        duration += std::chrono::duration<double, std::milli>(writeEnd - writeStart).count();
-
-        delete engine;
+    std::vector<std::thread> writers;
+    for (int i = 0; i < numThreads; ++i) {
+        writers.emplace_back(std::thread(write, engine, std::ref(keys), numWrite));
     }
+    for (auto &th : writers) {
+        th.join();
+    }
+    writers.clear();
+
+    auto writeEnd = std::chrono::high_resolution_clock::now();
+    duration += std::chrono::duration<double, std::milli>(writeEnd - writeStart).count();
+
+    delete engine;
+//    }
 
     std::cout << "Writing takes: "
               << duration
               << " milliseconds" << std::endl;
 
 
-    RetCode ret = Engine::Open(kEnginePath, &engine);
-    assert (ret == kSucc);
+    RetCode lal = Engine::Open(kEnginePath, &engine);
+    assert (lal == kSucc);
 
     std::cout << keys.size() << std::endl;
     std::sort(keys.begin(), keys.end());
@@ -373,10 +371,10 @@ int main()
 
     unsigned numRead = 10000;
     std::vector<std::thread> rreaders;
-    for (int i = 0; i < numThreads; ++i) {
+//    for (int i = 0; i < numThreads; ++i) {
         rreaders.emplace_back(std::thread(randomRead, engine, std::cref(keys), numRead));
-    }
-    for (auto& th : rreaders) {
+//    }
+    for (auto &th : rreaders) {
         th.join();
     }
     rreaders.clear();
@@ -394,9 +392,9 @@ int main()
 
     std::vector<std::thread> sreaders;
 //    for (int i = 0; i < 64; ++i) {
-        sreaders.emplace_back(std::thread(sequentialRead, engine, std::cref(keys)));
+    sreaders.emplace_back(std::thread(sequentialRead, engine, std::cref(keys)));
 //    }
-    for (auto& th : sreaders) {
+    for (auto &th : sreaders) {
         th.join();
     }
     sreaders.clear();
