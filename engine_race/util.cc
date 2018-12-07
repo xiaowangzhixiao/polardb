@@ -21,7 +21,6 @@ namespace polar_race {
     void merge_tow_arr(Location A[], Location tmpA[], int l, int r, int r_end) {
         int l_end = r - 1, nums = r_end - l + 1, tmp = l;
         while (l <= l_end && r <= r_end) {
-//            uint64_t bwl = bswap_64(A[l].key), bwr = bswap_64(A[r].key);
             if (A[l].key < A[r].key) {
                 tmpA[tmp++] = A[l++];
             } else if (A[l].key > A[r].key) {

@@ -10,7 +10,7 @@
 //#define MMAP_SIZE 50*16
 namespace polar_race {
 
-    MetaLog::MetaLog():_offset(0),_fd(-1), _firstRead(true),_loading(false),_table(nullptr) {
+    MetaLog::MetaLog():_offset(0),_fd(-1), _firstRead(true),_loading(false),_table(nullptr),test_num(0) {
 
     }
 
@@ -35,8 +35,12 @@ namespace polar_race {
 //        _table = static_cast<Location *>(malloc(_offset << 4 ));
 //        pread(_fd, _table, _offset<<4, 0);
         merge_sort(_table, _offset);
-        for (int i = 0; i < _offset ; ++i) {
-            std::cout << "key:"+std::to_string(_table[i].key) +" addr:"+std::to_string(_table[i].addr);
+        if(test_num.fetch_add(1)<5) {
+            std::cout << "size:"+std::to_string(_offset)+"\n";
+            for (int i = 0; i < _offset ; ++i) {
+                std::cout << "key:"+std::to_string(_table[i].key) +" addr:"+std::to_string(_table[i].addr)+"\n";
+            }
+            std::cout <<"\n";
         }
         return kSucc;
     }
@@ -93,7 +97,6 @@ namespace polar_race {
                 usleep(5);
             }
         }
-
         int addr = binary_search(_table, _offset, location.key);
         if (addr == -1) {
             return kNotFound;
