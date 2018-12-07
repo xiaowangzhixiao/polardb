@@ -59,15 +59,17 @@ namespace polar_race {
                 engineRace->partition[index + 1].metaLog.readAhread();
             }
             engineRace->partition[index].metaLog.findAll();
+            int size = engineRace->partition[index].metaLog.getSize();
+            std::cout <<"index:"+std::to_string(index)+" size:"+std::to_string(size)+"\n";
         }
     }
 
     void PreReadWithThread(EngineRace *engineRace, int shard_id) {
-        std::string pre = "pre read value ";
-        pre.append(std::to_string(shard_id)).append("\n");
+//        std::string pre = "pre read value ";
+//        pre.append(std::to_string(shard_id)).append("\n");
         engineRace->partition[shard_id - 2].valueLog.clear();
         engineRace->partition[shard_id].valueLog.findAll();
-        std::cout << pre;
+//        std::cout << pre;
     }
 
     // 1. Open engine

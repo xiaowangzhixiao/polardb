@@ -62,6 +62,8 @@ namespace polar_race {
         return kSucc;
     }
 
+
+
     RetCode polar_race::ValueLog::append(const polar_race::PolarString &value, uint32_t &addr) {
         addr = _offset.fetch_add(1);
         if ( pwrite(_fd, value.data(), VALUE_SIZE, ((__off_t)addr) << 12) < 0 ) {
@@ -111,7 +113,7 @@ namespace polar_race {
     void ValueLog::clear() {
         mut.lock();
         if (_val != nullptr) {
-            std::cout << "clear" <<std::endl;
+//            std::cout << "clear" <<std::endl;
             free(_val);
             _val = nullptr;
         }
