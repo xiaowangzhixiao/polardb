@@ -29,13 +29,20 @@ namespace polar_race {
     }
 
     void MetaLog::readAhread() {
-//        readahead(_fd, 0, _offset<<4);
+        readahead(_fd, 0, _offset<<4);
     }
 
     RetCode MetaLog::load() {
         _read_table = static_cast<Location *>(malloc(_offset << 4 ));
         pread(_fd, _read_table, _offset<<4, 0);
         merge_sort(_read_table, _offset);
+        if (test_num.fetch_add(1) < 10) {
+            std::cout <<"cout table:"<<test_num<<"\n";
+            for (int i=0;i<_offset;i++) {
+                std::cout <<"key:"<<_table[i].key<<" addr:"<<_table[i].addr<<"\n";
+            }
+            std::cout <<"\n\n";
+        }
         return kSucc;
     }
 
