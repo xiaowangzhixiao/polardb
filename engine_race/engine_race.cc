@@ -45,8 +45,8 @@ namespace polar_race {
     void initThread(EngineRace *engineRace, int thread_id) {
         for (int i = 0; i < BUCKET_NUM / THREAD_NUM; ++i) {
             uint32_t index = (uint32_t) thread_id * (BUCKET_NUM / THREAD_NUM) + i;
-            int real_size = engineRace->partition[index].metaLog.init(engineRace->_dir, index);  //返回真正的size
-            engineRace->partition[index].valueLog.init(engineRace->_dir, index, real_size); //初始化value
+            engineRace->partition[index].metaLog.init(engineRace->_dir, index);  //返回真正的size
+            engineRace->partition[index].valueLog.init(engineRace->_dir, index); //初始化value
         }
 //        std::cout <<"init meta, thread id:" + std::to_string(thread_id)  + "\n";
     }
@@ -59,7 +59,6 @@ namespace polar_race {
                 engineRace->partition[index + 1].metaLog.readAhread();
             }
             engineRace->partition[index].metaLog.findAll();
-            engineRace->partition[index].valueLog.preRead();
         }
     }
 

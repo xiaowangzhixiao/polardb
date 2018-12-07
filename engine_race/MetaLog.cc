@@ -22,7 +22,7 @@ namespace polar_race {
     }
 
     void MetaLog::readAhread() {
-//        readahead(_fd, 0, _offset*16);
+        readahead(_fd, 0, _offset<<4);
     }
 
     RetCode MetaLog::load() {
@@ -33,7 +33,7 @@ namespace polar_race {
         return kSucc;
     }
 
-    int MetaLog::init(const std::string &dir, int index) {
+    RetCode MetaLog::init(const std::string &dir, int index) {
         std::string filename = "";
         filename.append(dir).append("/meta_").append(std::to_string(index));
         if (FileExists(filename)) {
@@ -44,21 +44,21 @@ namespace polar_race {
                 return kIOError;
             }
             _offset = fileInfo.st_size >> 4;
-            _fd = open(filename.c_str(), O_RDWR);
+            _fd = open(filename.c_str(), O_RDWR | O_ASYNC);
             if (_fd < 0) {
                 perror(("recover file " + filename + " failed\n").c_str());
                 return kIOError;
             }
 
         } else {
-            _fd = open(filename.c_str(), O_RDWR | O_CREAT, 0644);
+            _fd = open(filename.c_str(), O_RDWR | O_CREAT | O_ASYNC, 0644);
             if (_fd < 0) {
                 perror(("open file " + filename + " failed\n").c_str());
                 return kIOError;
             }
             _offset = 0;
         }
-        return _offset;
+        return kSucc;
     }
 
     RetCode MetaLog::append(const Location &location) {

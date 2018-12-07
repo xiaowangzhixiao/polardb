@@ -17,7 +17,7 @@ namespace polar_race {
     public:
         explicit MetaLog();
         ~MetaLog();
-        int init(const std::string &dir, int index);
+        RetCode init(const std::string &dir, int index);
         RetCode append(const Location &);
         RetCode find(Location &);
         void readAhread();
