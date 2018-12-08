@@ -17,12 +17,14 @@ namespace polar_race {
         RetCode read(const uint32_t &addr, std::string *value);
         char* findAll();
         void clear();
+        RetCode directOpen(const std::string &dir, int index);
     private:
         std::atomic_bool _firstRead;
         std::atomic_bool _loading;
         int _fd; // 文件描述符
         std::atomic_uint_least32_t  _offset;
         char* _val;
+        char* _valStart;
         std::mutex mut;
     };
 

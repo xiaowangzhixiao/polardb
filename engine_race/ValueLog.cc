@@ -1,3 +1,5 @@
+#define _GNU_SOURCE
+
 #include "ValueLog.h"
 #include "util.h"
 #include <cstdlib>
@@ -10,7 +12,7 @@
 
 namespace polar_race {
 
-    ValueLog::ValueLog():_offset(0),_fd(-1),_firstRead(true),_loading(false),_val(nullptr) {
+    ValueLog::ValueLog() : _offset(0), _fd(-1), _firstRead(true), _loading(false), _val(nullptr) {
 
     }
 
@@ -38,7 +40,7 @@ namespace polar_race {
             }
             _offset = fileInfo.st_size >> 12;
 //            _fd = open(filename.c_str(), O_RDWR | O_ASYNC) ;
-            _fd = open(filename.c_str(), O_RDWR ) ;
+            _fd = open(filename.c_str(), O_RDWR);
             if (_fd < 0) {
                 perror(("recover file " + filename + " failed\n").c_str());
                 return kIOError;
@@ -57,10 +59,9 @@ namespace polar_race {
     }
 
 
-
     RetCode polar_race::ValueLog::append(const polar_race::PolarString &value, uint32_t &addr) {
         addr = _offset.fetch_add(1);
-        if ( pwrite(_fd, value.data(), VALUE_SIZE, ((__off_t)addr) << 12) < 0 ) {
+        if (pwrite(_fd, value.data(), VALUE_SIZE, ((__off_t) addr) << 12) < 0) {
             return kIOError;
         }
         return kSucc;
@@ -71,7 +72,7 @@ namespace polar_race {
         if (addr > _offset) {
             return kInvalidArgument;
         }
-        if (pread(_fd, buffer, VALUE_SIZE, ((__off_t)addr) << 12) < 0) {
+        if (pread(_fd, buffer, VALUE_SIZE, ((__off_t) addr) << 12) < 0) {
             perror("read file error");
             return kIOError;
         }
@@ -82,16 +83,18 @@ namespace polar_race {
     }
 
     /**
-    * 读取所有的val值
-    * @return
-    */
-    char* ValueLog::findAll() {
+     * 读取所有的val值
+     * @return
+     */
+    char *ValueLog::findAll() {
         bool loading = false;
         _loading.compare_exchange_strong(loading, true);
         if (!loading) {
             if (_firstRead) {
-                _val = static_cast<char *>(malloc(_offset << 12));
-                pread(_fd, _val, _offset<<12, 0);
+                int pageSize = getpagesize();
+                _val = static_cast<char *>(malloc((_offset << 12) + pageSize));
+                _valStart = (char *) ((((unsigned long) _val + pageSize - 1) / pageSize) * pageSize);
+                pread(_fd, _valStart, _offset << 12, 0);
                 _firstRead = false;
             }
 //            _loading = false;
@@ -100,7 +103,7 @@ namespace polar_race {
                 usleep(5);
             }
         }
-        return _val;
+        return _valStart;
     }
 
     // 需要原子操作
@@ -114,6 +117,19 @@ namespace polar_race {
         _firstRead = true;
         _loading = false;
         mut.unlock();
+    }
+
+    RetCode ValueLog::directOpen(const std::string &dir, int index) {
+        std::string filename = "";
+        filename.append(dir).append("/value_").append(std::to_string(index));
+        close(_fd);
+        _fd = -1;
+        _fd = open(filename.c_str(), O_RDWR | O_DIRECT);
+        if (_fd < 0) {
+            perror(("direct open file " + filename + " failed\n").c_str());
+            return kIOError;
+        }
+        return kSucc;
     }
 
 }

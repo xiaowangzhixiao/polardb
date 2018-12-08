@@ -52,6 +52,7 @@ namespace polar_race {
         std::atomic_int _range_count;
         // 第一次读时构建索引
         std::atomic_bool _firstRead;
+        std::atomic_bool _firstRange;
         std::atomic_bool _loading;
         std::atomic_int count;
     };

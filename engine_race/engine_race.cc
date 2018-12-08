@@ -61,12 +61,23 @@ namespace polar_race {
         }
     }
 
+    void preRange(EngineRace *engineRace, int thread_id) {
+        for (int i = 0; i < THREAD_CAP; ++i) {
+            uint32_t index = (uint32_t) thread_id * THREAD_CAP + i;
+            if(index +1 < (thread_id +1) * THREAD_CAP ){
+                engineRace->partition[index + 1].metaLog.readAhread();
+            }
+            engineRace->partition[index].valueLog.directOpen(engineRace->_dir, index);
+            engineRace->partition[index].metaLog.findAll();
+        }
+    }
+
     void PreReadWithThread(EngineRace *engineRace, int shard_id) {
         auto shardSt = std::chrono::high_resolution_clock::now();
         engineRace->partition[shard_id - 2].valueLog.clear();
         engineRace->partition[shard_id].valueLog.findAll();
         auto shardEd = std::chrono::high_resolution_clock::now();
-        std::cout << "shard takes: "
+        std::cout << "pre read takes: "
                   + std::to_string(std::chrono::duration<double, std::milli>(shardEd - shardSt).count())
                   << "ms" << std::endl;
     }
@@ -170,6 +181,7 @@ namespace polar_race {
                           + " milliseconds" + "\n";
                 _firstRead = false;
             }
+            _loading = false;
         } else {
             while (_firstRead) {
                 usleep(5);
@@ -214,11 +226,11 @@ namespace polar_race {
         bool loading = false;
         _loading.compare_exchange_strong(loading, true);
         if (!loading) {
-            if (_firstRead) {
+            if (_firstRange) {
                 auto rreadStart = std::chrono::high_resolution_clock::now();
                 std::vector<std::thread> initvec;
                 for (uint8_t i = 0; i < THREAD_NUM; ++i) {
-                    initvec.emplace_back(std::thread(preRead, this, i));
+                    initvec.emplace_back(std::thread(preRange, this, i));
                 }
 
                 for (auto& th:initvec) {
@@ -228,10 +240,10 @@ namespace polar_race {
                 std::cout << "Range pre read takes: " +
                              std::to_string(std::chrono::duration<double, std::milli>(rreadEnd - rreadStart).count())
                              + " milliseconds" + "\n";
-                _firstRead = false;
+                _firstRange = false;
             }
         } else {
-            while (_firstRead) {
+            while (_firstRange) {
                 usleep(5);
             }
         }
