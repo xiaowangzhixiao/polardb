@@ -145,6 +145,7 @@ namespace polar_race {
         _loading.compare_exchange_strong(loading, true);
         if (!loading) {
             if (_firstRead) {
+                auto rreadStart = std::chrono::high_resolution_clock::now();
                 std::vector<std::thread> initvec;
                 for (uint8_t i = 0; i < THREAD_NUM; ++i) {
                     initvec.emplace_back(std::thread(preRead, this, i));
@@ -154,6 +155,10 @@ namespace polar_race {
                     th.join();
                 }
                 std::cout << "pre read over" <<std::endl;
+                auto rreadEnd = std::chrono::high_resolution_clock::now();
+                std::cout << "Random read takes: " +
+                           std::to_string(std::chrono::duration<double, std::milli>(rreadEnd - rreadStart).count())
+                          + " milliseconds" + "\n";
                 _firstRead = false;
             }
         } else {
@@ -201,6 +206,7 @@ namespace polar_race {
         _loading.compare_exchange_strong(loading, true);
         if (!loading) {
             if (_firstRead) {
+                auto rreadStart = std::chrono::high_resolution_clock::now();
                 std::vector<std::thread> initvec;
                 for (uint8_t i = 0; i < THREAD_NUM; ++i) {
                     initvec.emplace_back(std::thread(preRead, this, i));
@@ -209,6 +215,10 @@ namespace polar_race {
                 for (auto& th:initvec) {
                     th.join();
                 }
+                auto rreadEnd = std::chrono::high_resolution_clock::now();
+                std::cout << "Random read takes: " +
+                             std::to_string(std::chrono::duration<double, std::milli>(rreadEnd - rreadStart).count())
+                             + " milliseconds" + "\n";
                 _firstRead = false;
             }
         } else {
