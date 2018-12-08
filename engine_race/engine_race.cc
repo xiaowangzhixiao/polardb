@@ -68,11 +68,8 @@ namespace polar_race {
     }
 
     void PreReadWithThread(EngineRace *engineRace, int shard_id) {
-//        std::string pre = "pre read value ";
-//        pre.append(std::to_string(shard_id)).append("\n");
         engineRace->partition[shard_id - 2].valueLog.clear();
         engineRace->partition[shard_id].valueLog.findAll();
-//        std::cout << pre;
     }
 
     // 1. Open engine
@@ -134,10 +131,6 @@ namespace polar_race {
         if (retCode != kSucc) {
             return retCode;
         }
-        std::cout << "write index:" << index << " addr:" << location.addr << std::endl;
-        if (location.addr % 10000 == 0) {
-            std::cout << "write index:" << index << " addr:" << location.addr << std::endl;
-        }
         // 3
         retCode = part.metaLog.append(location);
 
@@ -186,12 +179,13 @@ namespace polar_race {
         // 2
         retCode = part.metaLog.find(location);
         if (retCode != kSucc) {
+            std::cout <<"not found"+ std::to_string(location.key) +"\n";
             return retCode;
         }
 
-//        if (count.fetch_add(1) < 10000) {
-//            std::cout << "index:" + std::to_string(index) +"key:"+std::to_string(location.key) + " addr:" + std::to_string(location.addr) + "\n";
-//        }
+        if (count.fetch_add(1) < 10000) {
+            std::cout << "index:" + std::to_string(index) +"key:"+std::to_string(location.key) + " addr:" + std::to_string(location.addr) + "\n";
+        }
         // 3
         value->clear();
         retCode = part.valueLog.read(location.addr, value);
@@ -262,7 +256,6 @@ namespace polar_race {
             }
             usleep(2);
         }
-//        std::cout << thread_id<<" "<<_range_count<<std::endl;
         return kSucc;
     }
 

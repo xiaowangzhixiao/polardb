@@ -21,12 +21,10 @@ namespace polar_race {
         if (_read_table != nullptr) {
             free(_read_table);
             _read_table = nullptr;
-//            std::cout << "_read_table clear \n";
         }
         if (_table != nullptr) {
             munmap(_table, MMAP_SIZE);
             _table = nullptr;
-//            std::cout << "_table ummap \n";
         }
     }
 
