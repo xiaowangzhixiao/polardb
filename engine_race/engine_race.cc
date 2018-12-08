@@ -59,9 +59,9 @@ namespace polar_race {
                 engineRace->partition[index + 1].metaLog.readAhread();
             }
             engineRace->partition[index].metaLog.findAll();
-//            if (index<3) {
-//                engineRace->partition[index].metaLog.print();
-//            }
+            if (index<3) {
+                engineRace->partition[index].metaLog.print();
+            }
 //            int size = engineRace->partition[index].metaLog.getSize();
 //            std::cout <<"index:"+std::to_string(index)+" size:"+std::to_string(size)+"\n";
         }
@@ -134,10 +134,10 @@ namespace polar_race {
         if (retCode != kSucc) {
             return retCode;
         }
-//        std::cout << "write index:" << index << " addr:" << location.addr << std::endl;
-//        if (location.addr % 10000 == 0) {
-//            std::cout << "write index:" << index << " addr:" << location.addr << std::endl;
-//        }
+        std::cout << "write index:" << index << " addr:" << location.addr << std::endl;
+        if (location.addr % 10000 == 0) {
+            std::cout << "write index:" << index << " addr:" << location.addr << std::endl;
+        }
         // 3
         retCode = part.metaLog.append(location);
 
