@@ -29,7 +29,7 @@ namespace polar_race {
     }
 
     void MetaLog::readAhread() {
-//        readahead(_fd, 0, _offset<<4);
+        readahead(_fd, 0, _offset<<4);
     }
 
     RetCode MetaLog::load() {
@@ -49,15 +49,15 @@ namespace polar_race {
                 perror(("get size failed" + filename).c_str());
                 return kIOError;
             }
-//            _fd = open(filename.c_str(), O_RDWR | O_ASYNC);
-            _fd = open(filename.c_str(), O_RDWR);
+            _fd = open(filename.c_str(), O_RDWR | O_ASYNC);
+//            _fd = open(filename.c_str(), O_RDWR);
             if (_fd < 0) {
                 perror(("recover file " + filename + " failed\n").c_str());
                 return kIOError;
             }
         } else {
-//            _fd = open(filename.c_str(), O_RDWR | O_CREAT | O_ASYNC, 0644);
-            _fd = open(filename.c_str(), O_RDWR | O_CREAT, 0644);
+            _fd = open(filename.c_str(), O_RDWR | O_CREAT | O_ASYNC, 0644);
+//            _fd = open(filename.c_str(), O_RDWR | O_CREAT, 0644);
             if (_fd < 0) {
                 perror(("open file " + filename + " failed\n").c_str());
                 return kIOError;
