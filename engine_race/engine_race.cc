@@ -69,6 +69,7 @@ namespace polar_race {
     // 1. Open engine
     RetCode EngineRace::Open(const std::string &name, Engine **eptr) {
         *eptr = nullptr;
+        auto openStart = std::chrono::high_resolution_clock::now();
         EngineRace *engine_race = new EngineRace(name);
 
         if (!FileExists(name)
@@ -87,7 +88,10 @@ namespace polar_race {
             th.join();
         }
 
-        std::cout << "open success" << std::endl;
+        auto openEnd = std::chrono::high_resolution_clock::now();
+        std::cout << "Open takes: " +
+                     std::to_string(std::chrono::duration<double, std::milli>(openEnd - openStart).count())
+                     + " milliseconds" + "\n";
 
         *eptr = engine_race;
         return kSucc;
@@ -156,7 +160,7 @@ namespace polar_race {
                 }
                 std::cout << "pre read over" <<std::endl;
                 auto rreadEnd = std::chrono::high_resolution_clock::now();
-                std::cout << "Random read takes: " +
+                std::cout << "Random pre read takes: " +
                            std::to_string(std::chrono::duration<double, std::milli>(rreadEnd - rreadStart).count())
                           + " milliseconds" + "\n";
                 _firstRead = false;
@@ -216,7 +220,7 @@ namespace polar_race {
                     th.join();
                 }
                 auto rreadEnd = std::chrono::high_resolution_clock::now();
-                std::cout << "Random read takes: " +
+                std::cout << "Range pre read takes: " +
                              std::to_string(std::chrono::duration<double, std::milli>(rreadEnd - rreadStart).count())
                              + " milliseconds" + "\n";
                 _firstRead = false;
