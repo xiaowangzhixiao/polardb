@@ -31,6 +31,9 @@ namespace polar_race {
     RetCode MetaLog::load() {
 //        _read_table = static_cast<Location *>(malloc(_offset << 4));
 //        pread(_fd, _read_table, _offset << 4, 0);
+        if (_offset == 62923 || _offset == 62731) {
+            print();
+        }
         merge_sort(_table, _offset);
         return kSucc;
     }
@@ -52,8 +55,8 @@ namespace polar_race {
                 return kIOError;
             }
 
-            posix_fallocate(_fd, 0, MMAP_SIZE);
-            _table = static_cast<Location *>(mmap(NULL, MMAP_SIZE, PROT_READ | PROT_WRITE, MAP_PRIVATE, _fd, 0));
+//            posix_fallocate(_fd, 0, MMAP_SIZE);
+            _table = static_cast<Location *>(mmap(NULL, MMAP_SIZE, PROT_READ | PROT_WRITE, MAP_SHARED, _fd, 0));
         } else {
 //            _fd = open(filename.c_str(), O_RDWR | O_CREAT | O_ASYNC, 0644);
             _fd = open(filename.c_str(), O_RDWR | O_CREAT, 0644);
@@ -82,22 +85,6 @@ namespace polar_race {
         return kSucc;
     }
 
-//    RetCode MetaLog::find(Location &location) {
-//        int addr;
-//        if (location.key > tmp_key) {
-//            addr = binary_search(_table, location.key, tmp_addr, _offset);
-//        } else {
-//            addr = binary_search(_table, location.key, 0, tmp_addr);
-//        }
-//        if (addr == -1) {
-//            return kNotFound;
-//        }
-//        location.addr = addr;
-//        tmp_key = location.key;
-//        tmp_addr = location.addr;
-//        return kSucc;
-////    }
-
     /**
      * 读取的所有数据
      * @return
@@ -107,10 +94,6 @@ namespace polar_race {
         _loading.compare_exchange_strong(loading, true);
         if (!loading) {
             if (_firstRead) {
-//                if (_table != nullptr) {
-//                    munmap(_table, MMAP_SIZE);
-//                    _table = nullptr;
-//                }
                 load();
                 _firstRead = false;
             }
@@ -127,5 +110,14 @@ namespace polar_race {
         return _offset;
     }
 
+    void MetaLog::print() {
+        std::string out;
+        out+="size:"+std::to_string(_offset)+"\n";
+        for (int i = 0; i < _offset; i++) {
+            out+= "key:" + std::to_string(_table[i].key) + " addr:"+ std::to_string(_table[i].addr) + "\n";
+        }
+        out+="print over\n\n";
+        std::cout << out;
+    }
 
 }
