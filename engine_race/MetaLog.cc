@@ -15,16 +15,17 @@ namespace polar_race {
     }
 
     MetaLog::~MetaLog() {
+        if (_table != nullptr) {
+//            msync(_table, MMAP_SIZE);
+            munmap(_table, MMAP_SIZE);
+            _table = nullptr;
+        }
         if (_fd > 0) {
             close(_fd);
         }
         if (_read_table != nullptr) {
             free(_read_table);
             _read_table = nullptr;
-        }
-        if (_table != nullptr) {
-            munmap(_table, MMAP_SIZE);
-            _table = nullptr;
         }
     }
 
@@ -35,9 +36,9 @@ namespace polar_race {
     RetCode MetaLog::load() {
         _read_table = static_cast<Location *>(malloc(_offset << 4));
         pread(_fd, _read_table, _offset << 4, 0);
-        if (_offset == 62923 || _offset == 62731) {
-            print();
-        }
+//        if (_offset == 62923 || _offset == 62731) {
+//            print();
+//        }
         merge_sort(_read_table, _offset);
         return kSucc;
     }
