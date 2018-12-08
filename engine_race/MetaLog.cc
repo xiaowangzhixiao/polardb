@@ -118,10 +118,13 @@ namespace polar_race {
     }
 
     void MetaLog::print() {
+        std::string out;
+        out+="size:"+std::to_string(_offset)+"\n";
         for (int i = 0; i < _offset; i++) {
-            std::cout << "key:" << _read_table[i].key << " addr:" << _read_table[i].addr << "\n";
+            out+= "key:" + std::to_string(_read_table[i].key) + " addr:"+ std::to_string(_read_table[i].addr) + "\n";
         }
-        std::cout << "print over\n\n";
+        out+="print over\n\n";
+        std::cout << out;
     }
 
 }
