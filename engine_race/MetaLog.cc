@@ -30,9 +30,9 @@ namespace polar_race {
 
     RetCode MetaLog::load() {
         _table = static_cast<Location *>(mmap(NULL, MMAP_SIZE, PROT_READ | PROT_WRITE, MAP_SHARED, _fd, 0));
-        if (_offset == 62923 || _offset == 62731) {
-            print();
-        }
+//        if (_offset == 62923 || _offset == 62731) {
+//            print();
+//        }
         merge_sort(_table, _offset);
         return kSucc;
     }

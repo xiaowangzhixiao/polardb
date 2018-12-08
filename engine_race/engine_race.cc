@@ -77,9 +77,9 @@ namespace polar_race {
         engineRace->partition[shard_id - 2].valueLog.clear();
         engineRace->partition[shard_id].valueLog.findAll();
         auto shardEd = std::chrono::high_resolution_clock::now();
-        std::cout << "pre read takes: "
-                  + std::to_string(std::chrono::duration<double, std::milli>(shardEd - shardSt).count())
-                  << "ms" << std::endl;
+//        std::cout << "pre read takes: "
+//                  + std::to_string(std::chrono::duration<double, std::milli>(shardEd - shardSt).count())
+//                  << "ms" << std::endl;
     }
 
     // 1. Open engine
@@ -294,7 +294,7 @@ namespace polar_race {
                 continue;
             }
             if (i == _readone) {
-                std::cout <<"thread_id"+std::to_string(thread_id)+" shard:"+std::to_string(_readone);
+//                std::cout <<"thread_id"+std::to_string(thread_id)+" shard:"+std::to_string(_readone);
                 usleep(2);
                 continue;
             }
@@ -322,9 +322,9 @@ namespace polar_race {
             PolarString pval(p_val + pos * 4096, 4096);
             visitor.Visit(pkey, pval);
             auto preed = std::chrono::high_resolution_clock::now();
-            std::cout << "shard read: " +
-                         std::to_string(std::chrono::duration<double, std::milli>(preed - prest).count())
-                         + " ms" + "\n";
+//            std::cout << "shard read: " +
+//                         std::to_string(std::chrono::duration<double, std::milli>(preed - prest).count())
+//                         + " ms" + "\n";
 
             partition[i].shard_num--;
             _readone = i;
