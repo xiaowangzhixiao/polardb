@@ -22,6 +22,7 @@
 #include <sstream>
 #include <byteswap.h>
 #include <fcntl.h>
+#include <fstream>
 
 static const char kEnginePath[] = "C:\\kvdb";
 static const char kDumpPath[] = "/tmp/test_dump";
@@ -318,6 +319,36 @@ int main2() {
 //    std::cout << arr[2] <<std::endl;
 //    munmap(arr, getpagesize());
 //    close(_fd);
+//}
+
+//int main() {
+//    std::ifstream in("D:\\competition\\ali_polardb\\shard_key.txt");
+//    std::string filename;
+//    std::string line;
+//    char* end;
+////    Location* shard_loc = static_cast<Location *>(malloc(62923 << 4));
+//    uint64_t tmp_key = 0;
+//    std::set<int> addrset;
+//    if (in) {
+//        while (getline(in, line)) {
+//            int index = line.find("addr:");
+//            Location loc{};
+//            std::string key = line.substr(4, index-4);
+//            std::string addr = line.substr(index+5);
+//            uint64_t int_key = strtoll(key.c_str(), &end, 10);
+//            uint64_t int_addr = strtoll(addr.c_str(), &end, 10);
+//            if (tmp_key > int_key) {
+//                std::cout << "order error" << int_key <<std::endl;
+//            }
+//            if (tmp_key == int_key) {
+//                std::cout << "dup:"<< key <<std::endl;
+//            }
+//            tmp_key = int_key;
+//            addrset.insert(int_addr);
+//        }
+//    }
+//    std::cout << addrset.size() <<std::endl;
+//    return 0;
 //}
 
 int main() {

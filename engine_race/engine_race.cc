@@ -189,9 +189,9 @@ namespace polar_race {
             return retCode;
         }
 
-//        if (location.addr % 11111 == 0) {
-//            std::cout << "read index:" + std::to_string(index) + " addr:" + std::to_string(location.addr) + "\n";
-//        }
+        if (count.fetch_add(1) < 10000) {
+            std::cout << "index:" + std::to_string(index) +"key:"+std::to_string(location.key) + " addr:" + std::to_string(location.addr) + "\n";
+        }
         // 3
         value->clear();
         retCode = part.valueLog.read(location.addr, value);
