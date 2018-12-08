@@ -10,7 +10,7 @@
 //#define MMAP_SIZE 50*16
 namespace polar_race {
 
-    MetaLog::MetaLog() : _offset(0), _fd(-1), _firstRead(true), _loading(false), _table(nullptr), _read_table(nullptr) {
+    MetaLog::MetaLog() : _offset(0), _fd(-1), _firstRead(true), _loading(false), _table(nullptr){
 
     }
 
@@ -22,20 +22,20 @@ namespace polar_race {
         if (_fd > 0) {
             close(_fd);
         }
-        if (_read_table != nullptr) {
-            free(_read_table);
-            _read_table = nullptr;
-        }
+//        if (_read_table != nullptr) {
+//            free(_read_table);
+//            _read_table = nullptr;
+//        }
     }
 
     void MetaLog::readAhread() {
-        readahead(_fd, 0, _offset<<4);
+//        readahead(_fd, 0, _offset<<4);
     }
 
     RetCode MetaLog::load() {
-        _read_table = static_cast<Location *>(malloc(_offset << 4));
-        pread(_fd, _read_table, _offset << 4, 0);
-        merge_sort(_read_table, _offset);
+//        _read_table = static_cast<Location *>(malloc(_offset << 4));
+//        pread(_fd, _read_table, _offset << 4, 0);
+        merge_sort(_table, _offset);
         return kSucc;
     }
 
@@ -49,15 +49,18 @@ namespace polar_race {
                 perror(("get size failed" + filename).c_str());
                 return kIOError;
             }
-            _fd = open(filename.c_str(), O_RDWR | O_ASYNC);
-//            _fd = open(filename.c_str(), O_RDWR);
+//            _fd = open(filename.c_str(), O_RDWR | O_ASYNC);
+            _fd = open(filename.c_str(), O_RDWR);
             if (_fd < 0) {
                 perror(("recover file " + filename + " failed\n").c_str());
                 return kIOError;
             }
+
+            posix_fallocate(_fd, 0, MMAP_SIZE);
+            _table = static_cast<Location *>(mmap(NULL, MMAP_SIZE, PROT_READ | PROT_WRITE, MAP_SHARED, _fd, 0));
         } else {
-            _fd = open(filename.c_str(), O_RDWR | O_CREAT | O_ASYNC, 0644);
-//            _fd = open(filename.c_str(), O_RDWR | O_CREAT, 0644);
+//            _fd = open(filename.c_str(), O_RDWR | O_CREAT | O_ASYNC, 0644);
+            _fd = open(filename.c_str(), O_RDWR | O_CREAT, 0644);
             if (_fd < 0) {
                 perror(("open file " + filename + " failed\n").c_str());
                 return kIOError;
@@ -75,7 +78,7 @@ namespace polar_race {
     }
 
     RetCode MetaLog::find(Location &location) {
-        int addr = binary_search(_read_table, _offset, location.key);
+        int addr = binary_search(_table, _offset, location.key);
         if (addr == -1) {
             return kNotFound;
         }
@@ -92,10 +95,10 @@ namespace polar_race {
         _loading.compare_exchange_strong(loading, true);
         if (!loading) {
             if (_firstRead) {
-                if (_table != nullptr) {
-                    munmap(_table, MMAP_SIZE);
-                    _table = nullptr;
-                }
+//                if (_table != nullptr) {
+//                    munmap(_table, MMAP_SIZE);
+//                    _table = nullptr;
+//                }
                 load();
                 _firstRead = false;
             }
@@ -105,7 +108,7 @@ namespace polar_race {
                 usleep(5);
             }
         }
-        return _read_table;
+        return _table;
     }
 
     int MetaLog::getSize() {
