@@ -62,8 +62,13 @@ namespace polar_race {
     }
 
     void PreReadWithThread(EngineRace *engineRace, int shard_id) {
+        auto shardSt = std::chrono::high_resolution_clock::now();
         engineRace->partition[shard_id - 2].valueLog.clear();
         engineRace->partition[shard_id].valueLog.findAll();
+        auto shardEd = std::chrono::high_resolution_clock::now();
+        std::cout << "shard takes: "
+                  + std::to_string(std::chrono::duration<double, std::milli>(shardEd - shardSt).count())
+                  << "ms" << std::endl;
     }
 
     // 1. Open engine
@@ -237,7 +242,6 @@ namespace polar_race {
             int record = 0;
             while (_waiting) {
                 if (record++ > 10000) {
-//                    exit(-1);
                     break;
                 }
                 usleep(2);
@@ -266,8 +270,6 @@ namespace polar_race {
     void EngineRace::prefetch(Visitor &visitor, int thread_id) {
         int i = 0;
         int _readone = -1;
-        std::map<int, int> storeMap;
-        std::map<int, int> visitorMap;
 
         while (i < BUCKET_NUM) {
             if (partition[i].shard_num == 0) {
@@ -280,19 +282,19 @@ namespace polar_race {
                 continue;
             }
             if (i == _readone) {
+                std::cout <<"thread_id"+std::to_string(thread_id)+" shard:"+std::to_string(_readone);
                 usleep(2);
                 continue;
             }
             int data_size = partition[i].metaLog.getSize();
-            storeMap[i] = data_size;
             if (data_size == 0) {
                 partition[i].shard_num.fetch_sub(1);
                 _readone = i;
                 continue;
             }
+            auto prest = std::chrono::high_resolution_clock::now();
             Location *p_loc = partition[i].metaLog.findAll();
             char *p_val = partition[i].valueLog.findAll();
-            int tmp_sum = 0;
             for (int j = 0; j < data_size - 1; j++) {
                 if ((p_loc + j)->key != (p_loc + j + 1)->key) {
                     uint64_t tmpKey = bswap_64((p_loc + j)->key);
@@ -300,7 +302,6 @@ namespace polar_race {
                     int pos = (p_loc + j)->addr;
                     PolarString pval(p_val + pos * 4096, 4096);
                     visitor.Visit(pkey, pval);
-                    tmp_sum++;
                 }
             }
             uint64_t tmpKey = bswap_64((p_loc + data_size-1)->key);
@@ -308,16 +309,17 @@ namespace polar_race {
             int pos = (p_loc + data_size - 1)->addr;
             PolarString pval(p_val + pos * 4096, 4096);
             visitor.Visit(pkey, pval);
-            tmp_sum++;
-            visitorMap[i] = tmp_sum;
+            auto preed = std::chrono::high_resolution_clock::now();
+            std::cout << "shard read: " +
+                         std::to_string(std::chrono::duration<double, std::milli>(preed - prest).count())
+                         + " ms" + "\n";
 
-
-            partition[i].shard_num.fetch_sub(1);
+            partition[i].shard_num--;
             _readone = i;
         }
 
         close(thread_id);
-        _range_count.fetch_add(1);
+        _range_count--;
     }
 
 
