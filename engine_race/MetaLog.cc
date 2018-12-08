@@ -10,7 +10,7 @@
 //#define MMAP_SIZE 50*16
 namespace polar_race {
 
-    MetaLog::MetaLog() : _offset(0), _fd(-1), _firstRead(true), _loading(false), _table(nullptr){
+    MetaLog::MetaLog() : _offset(0), _fd(-1), _firstRead(true), _loading(false), _table(nullptr), tmp_key(0), tmp_addr(0){
 
     }
 
@@ -22,10 +22,6 @@ namespace polar_race {
         if (_fd > 0) {
             close(_fd);
         }
-//        if (_read_table != nullptr) {
-//            free(_read_table);
-//            _read_table = nullptr;
-//        }
     }
 
     void MetaLog::readAhread() {
@@ -85,6 +81,22 @@ namespace polar_race {
         location.addr = addr;
         return kSucc;
     }
+
+//    RetCode MetaLog::find(Location &location) {
+//        int addr;
+//        if (location.key > tmp_key) {
+//            addr = binary_search(_table, location.key, tmp_addr, _offset);
+//        } else {
+//            addr = binary_search(_table, location.key, 0, tmp_addr);
+//        }
+//        if (addr == -1) {
+//            return kNotFound;
+//        }
+//        location.addr = addr;
+//        tmp_key = location.key;
+//        tmp_addr = location.addr;
+//        return kSucc;
+//    }
 
     /**
      * 读取的所有数据

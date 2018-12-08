@@ -32,6 +32,8 @@ namespace polar_race {
         std::atomic_bool _firstRead;
         std::atomic_bool _loading;
         Location* _table;
+        uint64_t tmp_key;
+        int tmp_addr;
 //        Location* _read_table;
     };
 

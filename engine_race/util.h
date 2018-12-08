@@ -20,6 +20,8 @@ namespace polar_race {
 
     int binary_search(Location arr[], int size, uint64_t key);
 
+    int binary_search(Location arr[], uint64_t key, int l, int r);
+
     uint64_t str2uint(const PolarString &key);
 
     void uint2char(const uint64_t num, char ch[] );

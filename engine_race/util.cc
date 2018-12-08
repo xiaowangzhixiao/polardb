@@ -42,6 +42,7 @@ namespace polar_race {
         }
     }
 
+    // TODO 优化排序算法
     void merge_sort(Location A[], int N) {
         int length = 1;
         Location *tmpA = (Location *) malloc(N * sizeof(Location));
@@ -73,11 +74,30 @@ namespace polar_race {
      */
     int binary_search(Location arr[], int size, uint64_t key) {
         int l = 0, r = size - 1;
-//        uint64_t bw_key;
-//        key = bswap_64(key);
         while (l <= r) {
             int mid = (r - l) / 2 + l;
-//            bw_key = bswap_64(arr[mid].key);
+            if (arr[mid].key == key) {
+                return arr[mid].addr;
+            } else if (arr[mid].key < key) {
+                l = mid + 1;
+            } else {
+                r = mid - 1;
+            }
+        }
+        return -1;
+    }
+
+    /**
+     * 优化二分查找
+     * @param arr
+     * @param key
+     * @param l
+     * @param r
+     * @return
+     */
+    int binary_search(Location arr[], uint64_t key, int l, int r) {
+        while (l <= r) {
+            int mid = (r - l) / 2 + l;
             if (arr[mid].key == key) {
                 return arr[mid].addr;
             } else if (arr[mid].key < key) {

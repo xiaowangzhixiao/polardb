@@ -1,3 +1,5 @@
+#define _GNU_SOURCE
+
 #include "ValueLog.h"
 #include "util.h"
 #include <cstdlib>
@@ -38,7 +40,7 @@ namespace polar_race {
             }
             _offset = fileInfo.st_size >> 12;
 //            _fd = open(filename.c_str(), O_RDWR | O_ASYNC) ;
-            _fd = open(filename.c_str(), O_RDWR ) ;
+            _fd = open(filename.c_str(), O_RDWR | O_DIRECT) ;
             if (_fd < 0) {
                 perror(("recover file " + filename + " failed\n").c_str());
                 return kIOError;
