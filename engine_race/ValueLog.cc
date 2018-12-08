@@ -107,7 +107,7 @@ namespace polar_race {
     void ValueLog::clear() {
         mut.lock();
         if (_val != nullptr) {
-            std::cout << "clear" <<std::endl;
+//            std::cout << "clear" <<std::endl;
             free(_val);
             _val = nullptr;
         }

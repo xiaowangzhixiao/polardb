@@ -16,7 +16,6 @@ namespace polar_race {
 
     MetaLog::~MetaLog() {
         if (_table != nullptr) {
-//            msync(_table, MMAP_SIZE);
             munmap(_table, MMAP_SIZE);
             _table = nullptr;
         }
@@ -36,9 +35,6 @@ namespace polar_race {
     RetCode MetaLog::load() {
         _read_table = static_cast<Location *>(malloc(_offset << 4));
         pread(_fd, _read_table, _offset << 4, 0);
-//        if (_offset == 62923 || _offset == 62731) {
-//            print();
-//        }
         merge_sort(_read_table, _offset);
         return kSucc;
     }
@@ -116,14 +112,5 @@ namespace polar_race {
         return _offset;
     }
 
-    void MetaLog::print() {
-        std::string out;
-        out+="size:"+std::to_string(_offset)+"\n";
-        for (int i = 0; i < _offset; i++) {
-            out+= "key:" + std::to_string(_read_table[i].key) + " addr:"+ std::to_string(_read_table[i].addr) + "\n";
-        }
-        out+="print over\n\n";
-        std::cout << out;
-    }
 
 }
