@@ -64,11 +64,11 @@ namespace polar_race {
     void preRange(EngineRace *engineRace, int thread_id) {
         for (int i = 0; i < THREAD_CAP; ++i) {
             uint32_t index = (uint32_t) thread_id * THREAD_CAP + i;
-            if(index +1 < (thread_id +1) * THREAD_CAP ){
-                engineRace->partition[index + 1].metaLog.readAhread();
-            }
+//            if(index +1 < (thread_id +1) * THREAD_CAP ){
+//                engineRace->partition[index + 1].metaLog.readAhread();
+//            }
             engineRace->partition[index].valueLog.directOpen(engineRace->_dir, index);
-            engineRace->partition[index].metaLog.findAll();
+//            engineRace->partition[index].metaLog.findAll();
         }
     }
 
@@ -158,7 +158,7 @@ namespace polar_race {
      * @return
      */
     RetCode EngineRace::Read(const PolarString &key, std::string *value) {
-        bool loading = false;
+        /*bool loading = false;
         _loading.compare_exchange_strong(loading, true);
         if (!loading) {
             if (_firstRead) {
@@ -178,12 +178,12 @@ namespace polar_race {
                           + " milliseconds" + "\n";
                 _firstRead = false;
             }
-            _loading = false;
+//            _loading = false;
         } else {
             while (_firstRead) {
                 usleep(5);
             }
-        }
+        }*/
 
         Location location{};
         RetCode retCode;
@@ -196,9 +196,6 @@ namespace polar_race {
         // 2
         retCode = part.metaLog.find(location);
 
-//        if (count.fetch_add(1)< 10000) {
-//            std::cout <<"key:"+std::to_string(location.key)+" addr:"+std::to_string(location.addr)+"\n";
-//        }
         if (retCode != kSucc) {
             return retCode;
         }

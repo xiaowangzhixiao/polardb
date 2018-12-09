@@ -50,7 +50,8 @@ namespace polar_race {
                 perror(("recover file " + filename + " failed\n").c_str());
                 return kIOError;
             }
-
+            _offset = offset;
+            load();
         } else {
             _fd = open(filename.c_str(), O_RDWR | O_CREAT, 0644);
             if (_fd < 0) {
@@ -60,7 +61,6 @@ namespace polar_race {
             posix_fallocate(_fd, 0, MMAP_SIZE);
             _table = static_cast<Location *>(mmap(NULL, MMAP_SIZE, PROT_READ | PROT_WRITE, MAP_SHARED, _fd, 0));
         }
-        _offset = offset;
         return kSucc;
     }
 
