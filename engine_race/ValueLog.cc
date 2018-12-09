@@ -97,7 +97,7 @@ namespace polar_race {
                 pread(_fd, _valStart, _offset << 12, 0);
                 _firstRead = false;
             }
-//            _loading = false;
+            _loading = false;
         } else {
             while (_firstRead) {
                 usleep(5);

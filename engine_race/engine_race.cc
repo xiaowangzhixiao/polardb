@@ -198,6 +198,10 @@ namespace polar_race {
 
         // 2
         retCode = part.metaLog.find(location);
+
+        if (count.fetch_add(1)< 10000) {
+            std::cout <<"key:"+std::to_string(location.key)+" addr:"+std::to_string(location.addr)+"\n";
+        }
         if (retCode != kSucc) {
             return retCode;
         }

@@ -10,11 +10,15 @@
 //#define MMAP_SIZE 50*16
 namespace polar_race {
 
-    MetaLog::MetaLog() : _offset(0), _fd(-1), _firstRead(true), _loading(false), _table(nullptr), tmp_key(0), tmp_addr(0){
+    MetaLog::MetaLog() : _offset(0), _fd(-1), _firstRead(true), _loading(false), _table(nullptr), _read_table(nullptr){
 
     }
 
     MetaLog::~MetaLog() {
+        if (_read_table != nullptr) {
+            free(_read_table);
+            _read_table = nullptr;
+        }
         if (_table != nullptr) {
             munmap(_table, MMAP_SIZE);
             _table = nullptr;
@@ -29,8 +33,10 @@ namespace polar_race {
     }
 
     RetCode MetaLog::load() {
-        _table = static_cast<Location *>(mmap(NULL, MMAP_SIZE, PROT_READ | PROT_WRITE, MAP_SHARED, _fd, 0));
-        merge_sort(_table, _offset);
+//        _table = static_cast<Location *>(mmap(NULL, MMAP_SIZE, PROT_READ | PROT_WRITE, MAP_SHARED, _fd, 0));
+        _read_table = static_cast<Location *>(malloc(_offset << 4));
+        pread(_fd, _read_table, _offset << 4, 0);
+        merge_sort(_read_table, _offset);
         return kSucc;
     }
 
@@ -50,9 +56,6 @@ namespace polar_race {
                 perror(("recover file " + filename + " failed\n").c_str());
                 return kIOError;
             }
-
-//            posix_fallocate(_fd, 0, MMAP_SIZE);
-//            _table = static_cast<Location *>(mmap(NULL, MMAP_SIZE, PROT_READ | PROT_WRITE, MAP_SHARED, _fd, 0));
         } else {
             _fd = open(filename.c_str(), O_RDWR | O_CREAT | O_ASYNC, 0644);
 //            _fd = open(filename.c_str(), O_RDWR | O_CREAT, 0644);
@@ -73,8 +76,9 @@ namespace polar_race {
     }
 
     RetCode MetaLog::find(Location &location) {
-        int addr = binary_search(_table, _offset, location.key);
+        int addr = binary_search(_read_table, _offset, location.key);
         if (addr == -1) {
+            std::cout <<"key not found "+std::to_string(location.key)+"\n";
             return kNotFound;
         }
         location.addr = addr;
@@ -93,13 +97,13 @@ namespace polar_race {
                 load();
                 _firstRead = false;
             }
-//            _loading = false;
+            _loading = false;
         } else {
             while (_firstRead) {
                 usleep(5);
             }
         }
-        return _table;
+        return _read_table;
     }
 
     int MetaLog::getSize() {
@@ -110,7 +114,7 @@ namespace polar_race {
         std::string out;
         out+="size:"+std::to_string(_offset)+"\n";
         for (int i = 0; i < _offset; i++) {
-            out+= "key:" + std::to_string(_table[i].key) + " addr:"+ std::to_string(_table[i].addr) + "\n";
+            out+= "key:" + std::to_string(_read_table[i].key) + " addr:"+ std::to_string(_read_table[i].addr) + "\n";
         }
         out+="print over\n\n";
         std::cout << out;
