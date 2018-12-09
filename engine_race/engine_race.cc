@@ -73,10 +73,26 @@ namespace polar_race {
     }
 
     void PreReadWithThread(EngineRace *engineRace, int shard_id) {
-        auto shardSt = std::chrono::high_resolution_clock::now();
         engineRace->partition[shard_id - 2].valueLog.clear();
         engineRace->partition[shard_id].valueLog.findAll();
-        auto shardEd = std::chrono::high_resolution_clock::now();
+    }
+
+    void prepareRange(EngineRace *engineRace) {
+        int shard_id = 2;
+        Partition* p = engineRace->partition;
+        p[0].valueLog.findAll();
+        p[1].valueLog.findAll();
+        p[0].read = true;
+        p[1].read = true;
+        while (shard_id < 1024) {
+            if (p[shard_id-2].shard_num == 0) {
+                p[shard_id-2].valueLog.clear();
+                p[shard_id].valueLog.findAll();
+                p[shard_id++].read = true;
+            } else {
+                usleep(2);
+            }
+        }
     }
 
     // 1. Open engine
@@ -178,7 +194,7 @@ namespace polar_race {
                           + " milliseconds" + "\n";
                 _firstRead = false;
             }
-//            _loading = false;
+            _loading = false;
         } else {
             while (_firstRead) {
                 usleep(5);
@@ -238,6 +254,8 @@ namespace polar_race {
                 std::cout << "Range pre read takes: " +
                              std::to_string(std::chrono::duration<double, std::milli>(rreadEnd - rreadStart).count())
                              + " milliseconds" + "\n";
+                std::thread prepareth(prepareRange, this);
+                prepareth.detach();
                 _firstRange = false;
             }
         } else {
@@ -251,7 +269,7 @@ namespace polar_race {
             // 开启多线程读
             int record = 0;
             while (_waiting) {
-                if (record++ > 10000) {
+                if (record++ > 100) {
                     break;
                 }
                 usleep(2);
@@ -269,7 +287,7 @@ namespace polar_race {
 
         int count = 0;
         while (_range_count <= THREAD_NUM - 1) {
-            if (count++ > 10000) {
+            if (count++ > 1000) {
                 break;
             }
             usleep(2);
@@ -279,27 +297,16 @@ namespace polar_race {
 
     void EngineRace::prefetch(Visitor &visitor, int thread_id) {
         int i = 0;
-        int _readone = -1;
 
         while (i < BUCKET_NUM) {
-            if (partition[i].shard_num == 0) {
-                if (i + 2 < 1024 && partition[i + 2].read == false) {
-                    partition[i + 2].read = true;
-                    std::thread thread(PreReadWithThread, this, i + 2);
-                    thread.detach();
-                }
-                i++;
-                continue;
-            }
-            if (i == _readone) {
-//                std::cout <<"thread_id"+std::to_string(thread_id)+" shard:"+std::to_string(_readone);
-                usleep(2);
+            if (partition[i].read == false) {
+                usleep(1);
                 continue;
             }
             int data_size = partition[i].metaLog.getSize();
             if (data_size == 0) {
                 partition[i].shard_num.fetch_sub(1);
-                _readone = i;
+                i++;
                 continue;
             }
             auto prest = std::chrono::high_resolution_clock::now();
@@ -320,18 +327,13 @@ namespace polar_race {
             PolarString pval(p_val + pos * 4096, 4096);
             visitor.Visit(pkey, pval);
             auto preed = std::chrono::high_resolution_clock::now();
-//            std::cout << "shard read: " +
-//                         std::to_string(std::chrono::duration<double, std::milli>(preed - prest).count())
-//                         + " ms" + "\n";
-
             partition[i].shard_num--;
-            _readone = i;
+            i++;
         }
 
         close(thread_id);
         _range_count--;
     }
-
 
     RetCode EngineRace::close(int thread_id) {
         std::string clostr = "close by thread:";
