@@ -77,9 +77,6 @@ namespace polar_race {
         engineRace->partition[shard_id - 2].valueLog.clear();
         engineRace->partition[shard_id].valueLog.findAll();
         auto shardEd = std::chrono::high_resolution_clock::now();
-//        std::cout << "pre read takes: "
-//                  + std::to_string(std::chrono::duration<double, std::milli>(shardEd - shardSt).count())
-//                  << "ms" << std::endl;
     }
 
     // 1. Open engine
@@ -199,9 +196,9 @@ namespace polar_race {
         // 2
         retCode = part.metaLog.find(location);
 
-        if (count.fetch_add(1)< 10000) {
-            std::cout <<"key:"+std::to_string(location.key)+" addr:"+std::to_string(location.addr)+"\n";
-        }
+//        if (count.fetch_add(1)< 10000) {
+//            std::cout <<"key:"+std::to_string(location.key)+" addr:"+std::to_string(location.addr)+"\n";
+//        }
         if (retCode != kSucc) {
             return retCode;
         }

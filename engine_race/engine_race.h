@@ -54,7 +54,7 @@ namespace polar_race {
         std::atomic_bool _firstRead;
         std::atomic_bool _firstRange;
         std::atomic_bool _loading;
-        std::atomic_int count;
+//        std::atomic_int count;
     };
 
 }  // namespace polar_race

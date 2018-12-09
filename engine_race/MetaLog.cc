@@ -72,7 +72,7 @@ namespace polar_race {
     RetCode MetaLog::find(Location &location) {
         int addr = binary_search(_table, _offset, location.key);
         if (addr == -1) {
-            std::cout <<"key not found "+std::to_string(location.key)+"\n";
+//            std::cout <<"key not found "+std::to_string(location.key)+"\n";
             return kNotFound;
         }
         location.addr = addr;
