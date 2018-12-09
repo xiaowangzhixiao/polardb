@@ -4,10 +4,7 @@
 #include <iostream>
 #include <sys/stat.h>
 #include <fcntl.h>
-#include <sys/mman.h>
 
-#define MMAP_SIZE 64000*16
-//#define MMAP_SIZE 50*16
 namespace polar_race {
 
     MetaLog::MetaLog():_offset(0),_fd(-1), _firstRead(true),_loading(false),_table(nullptr) {
@@ -15,30 +12,28 @@ namespace polar_race {
     }
 
     MetaLog::~MetaLog() {
-        if (_table != nullptr) {
-            munmap(_table, MMAP_SIZE);
-            _table = nullptr;
-        }
         if (_fd > 0) {
             close(_fd);
+        }
+        if (_table != nullptr) {
+            free(_table);
+            _table = nullptr;
         }
     }
 
     void MetaLog::readAhread() {
-//        readahead(_fd, 0, _offset<<4);
+        readahead(_fd, 0, _offset<<4);
     }
 
     RetCode MetaLog::load() {
-        _table = static_cast<Location *>(mmap(NULL, MMAP_SIZE, PROT_READ | PROT_WRITE, MAP_SHARED, _fd, 0));
+        // 插入skiplist准备读取
+        _table = static_cast<Location *>(malloc(_offset << 4 ));
+        pread(_fd, _table, _offset<<4, 0);
         merge_sort(_table, _offset);
-//        if (fd_index < 3) {
-//            print();
-//        }
         return kSucc;
     }
 
-    RetCode MetaLog::init(const std::string &dir, int index, int offset) {
-        fd_index = index;
+    RetCode MetaLog::init(const std::string &dir, int index) {
         std::string filename = "";
         filename.append(dir).append("/meta_").append(std::to_string(index));
         if (FileExists(filename)) {
@@ -48,35 +43,48 @@ namespace polar_race {
                 perror(("get size failed" + filename).c_str());
                 return kIOError;
             }
-//            _fd = open(filename.c_str(), O_RDWR | O_ASYNC);
-            _fd = open(filename.c_str(), O_RDWR);
+            _offset = fileInfo.st_size >> 4;
+            _fd = open(filename.c_str(), O_RDWR | O_ASYNC);
             if (_fd < 0) {
                 perror(("recover file " + filename + " failed\n").c_str());
                 return kIOError;
             }
-            _offset = offset;
-//            load();
+
         } else {
-            _fd = open(filename.c_str(), O_RDWR | O_CREAT, 0644);
+            _fd = open(filename.c_str(), O_RDWR | O_CREAT | O_ASYNC, 0644);
             if (_fd < 0) {
                 perror(("open file " + filename + " failed\n").c_str());
                 return kIOError;
             }
-            posix_fallocate(_fd, 0, MMAP_SIZE);
-            _table = static_cast<Location *>(mmap(NULL, MMAP_SIZE, PROT_READ | PROT_WRITE, MAP_SHARED, _fd, 0));
+            _offset = 0;
         }
         return kSucc;
     }
 
     RetCode MetaLog::append(const Location &location) {
-        _table[_offset.fetch_add(1)] = location;
+        if (pwrite(_fd, &location, 16, (__off_t)_offset.fetch_add(1) << 4) < 0) {
+            return kIOError;
+        }
         return kSucc;
     }
 
     RetCode MetaLog::find(Location &location) {
+        bool loading = false;
+        _loading.compare_exchange_strong(loading, true);
+        if (!loading) {
+            if (_firstRead){
+                load();
+                _firstRead = false;
+            }
+            _loading = false;
+        } else {
+            while (_firstRead) {
+                usleep(5);
+            }
+        }
+
         int addr = binary_search(_table, _offset, location.key);
         if (addr == -1) {
-//            std::cout <<"key not found "+std::to_string(location.key)+"\n";
             return kNotFound;
         }
         location.addr = addr;
@@ -87,11 +95,11 @@ namespace polar_race {
      * 读取的所有数据
      * @return
      */
-    Location *MetaLog::findAll() {
+    Location* MetaLog::findAll() {
         bool loading = false;
         _loading.compare_exchange_strong(loading, true);
         if (!loading) {
-            if (_firstRead) {
+            if (_firstRead){
                 load();
                 _firstRead = false;
             }
@@ -106,16 +114,6 @@ namespace polar_race {
 
     int MetaLog::getSize() {
         return _offset;
-    }
-
-    void MetaLog::print() {
-        std::string out;
-        out+="size:"+std::to_string(_offset)+"\n";
-        for (int i = 0; i < _offset; i++) {
-            out+= "key:" + std::to_string(_table[i].key) + " addr:"+ std::to_string(_table[i].addr) + "\n";
-        }
-        out+="print over\n\n";
-        std::cout << out;
     }
 
 }

@@ -6,6 +6,7 @@
 #define ENGINE_UTIL_H
 
 #include <string>
+#include <byteswap.h>
 #include "MetaLog.h"
 
 
@@ -17,7 +18,9 @@ namespace polar_race {
 
     void merge_sort(Location A[], int N);
 
-    int binary_search(Location arr[], int size, uint64_t key);
+    int binary_search(Location* arr, int size, uint64_t key);
+
+    int binary_search(Location arr[], uint64_t key, int l, int r);
 
     uint64_t str2uint(const PolarString &key);
 

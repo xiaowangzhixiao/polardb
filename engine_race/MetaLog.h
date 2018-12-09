@@ -17,21 +17,22 @@ namespace polar_race {
     public:
         explicit MetaLog();
         ~MetaLog();
-        RetCode init(const std::string &dir, int index);
+        RetCode init(const std::string &dir, int index, int offset);
         RetCode append(const Location &);
         RetCode find(Location &);
+        void readAhread();
         Location* findAll();
         int getSize();
+        void print();
     private:
 
         RetCode load();
-
         std::atomic_uint_least32_t _offset;
         int _fd;
         std::atomic_bool _firstRead;
         std::atomic_bool _loading;
-//        HashTable<uint64_t, uint32_t> _table;
         Location* _table;
+        int fd_index;
     };
 
 }
