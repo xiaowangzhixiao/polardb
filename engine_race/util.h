@@ -18,7 +18,7 @@ namespace polar_race {
 
     void merge_sort(Location A[], int N);
 
-    int binary_search(Location arr[], int size, uint64_t key);
+    int binary_search(Location* arr, int size, uint64_t key);
 
     int binary_search(Location arr[], uint64_t key, int l, int r);
 
