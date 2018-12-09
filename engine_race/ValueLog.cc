@@ -69,9 +69,9 @@ namespace polar_race {
 
     RetCode ValueLog::read(const uint32_t &addr, std::string *value) {
         char buffer[VALUE_SIZE];
-        if (addr > _offset) {
-            return kInvalidArgument;
-        }
+//        if (addr > _offset) {
+//            return kInvalidArgument;
+//        }
         if (pread(_fd, buffer, VALUE_SIZE, ((__off_t) addr) << 12) < 0) {
             perror("read file error");
             return kIOError;

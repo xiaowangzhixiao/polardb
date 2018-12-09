@@ -261,8 +261,6 @@ namespace polar_race {
                 std::cout << "Range pre read takes: " +
                              std::to_string(std::chrono::duration<double, std::milli>(rreadEnd - rreadStart).count())
                              + " milliseconds" + "\n";
-                std::thread prepareth(prepareRange, this);
-                prepareth.detach();
                 _firstRange = false;
                 {
                     std::unique_lock<std::mutex> lck(mtx);
@@ -282,6 +280,10 @@ namespace polar_race {
         int thread_id = 0;
         if ((thread_id = _container.fetch_add(1)) < THREAD_NUM - 1) {
             // 开启多线程读
+            if(thread_id == 0) {
+                std::thread prepareth(prepareRange, this);
+                prepareth.detach();
+            }
             int record = 0;
             while (_waiting) {
                 if (record++ > 100) {
