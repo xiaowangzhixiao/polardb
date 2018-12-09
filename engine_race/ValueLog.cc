@@ -39,14 +39,14 @@ namespace polar_race {
                 return kIOError;
             }
             _offset = fileInfo.st_size >> 12;
-            _fd = open(filename.c_str(), O_RDWR | O_ASYNC) ;
+            _fd = open(filename.c_str(), O_RDWR) ;
 //            _fd = open(filename.c_str(), O_RDWR);
             if (_fd < 0) {
                 perror(("recover file " + filename + " failed\n").c_str());
                 return kIOError;
             }
         } else {
-            _fd = open(filename.c_str(), O_RDWR | O_CREAT | O_ASYNC, 0644);
+            _fd = open(filename.c_str(), O_RDWR | O_CREAT, 0644);
 //            _fd = open(filename.c_str(), O_RDWR | O_CREAT, 0644);
             if (_fd < 0) {
                 perror(("open file " + filename + " failed\n").c_str());
