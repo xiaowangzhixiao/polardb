@@ -23,17 +23,16 @@ namespace polar_race {
         void readAhread();
         Location* findAll();
         int getSize();
-//        void print();
+        void print();
     private:
 
         RetCode load();
-
         std::atomic_uint_least32_t _offset;
         int _fd;
         std::atomic_bool _firstRead;
         std::atomic_bool _loading;
         Location* _table;
-//        Location* _read_table;
+        int fd_index;
     };
 
 }

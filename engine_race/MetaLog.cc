@@ -31,10 +31,14 @@ namespace polar_race {
     RetCode MetaLog::load() {
         _table = static_cast<Location *>(mmap(NULL, MMAP_SIZE, PROT_READ | PROT_WRITE, MAP_SHARED, _fd, 0));
         merge_sort(_table, _offset);
+        if (fd_index < 3) {
+            print();
+        }
         return kSucc;
     }
 
     RetCode MetaLog::init(const std::string &dir, int index, int offset) {
+        fd_index = index;
         std::string filename = "";
         filename.append(dir).append("/meta_").append(std::to_string(index));
         if (FileExists(filename)) {
@@ -102,6 +106,16 @@ namespace polar_race {
 
     int MetaLog::getSize() {
         return _offset;
+    }
+
+    void MetaLog::print() {
+        std::string out;
+        out+="size:"+std::to_string(_offset)+"\n";
+        for (int i = 0; i < _offset; i++) {
+            out+= "key:" + std::to_string(_table[i].key) + " addr:"+ std::to_string(_table[i].addr) + "\n";
+        }
+        out+="print over\n\n";
+        std::cout << out;
     }
 
 }
