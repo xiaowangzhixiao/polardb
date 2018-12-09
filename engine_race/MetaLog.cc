@@ -31,9 +31,9 @@ namespace polar_race {
     RetCode MetaLog::load() {
         _table = static_cast<Location *>(mmap(NULL, MMAP_SIZE, PROT_READ | PROT_WRITE, MAP_SHARED, _fd, 0));
         merge_sort(_table, _offset);
-        if (fd_index < 3) {
-            print();
-        }
+//        if (fd_index < 3) {
+//            print();
+//        }
         return kSucc;
     }
 
@@ -55,7 +55,7 @@ namespace polar_race {
                 return kIOError;
             }
             _offset = offset;
-            load();
+//            load();
         } else {
             _fd = open(filename.c_str(), O_RDWR | O_CREAT, 0644);
             if (_fd < 0) {

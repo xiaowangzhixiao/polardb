@@ -90,7 +90,7 @@ namespace polar_race {
             int mid = (r - l) / 2 + l;
             if (arr[mid].key < key) {
                 l = mid + 1;
-            } else if (arr[mid].key == key) { 
+            } else if (arr[mid].key == key) {
                 return arr[mid].addr;
             } else {
                 r = mid - 1;
