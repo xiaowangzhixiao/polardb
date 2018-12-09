@@ -87,8 +87,8 @@ namespace polar_race {
     int binary_search(Location arr[], int size, uint64_t key) {
         int l = 0, r = size - 1;
         while (l <= r) {
-//            int mid = (r - l) / 2 + l;
-            int mid = (int)((key - arr[l].key) / (arr[r].key - arr[l].key))*(r -l)  + l;
+            int mid = (r - l) / 2 + l;
+//            int mid = (int)(((double)(key - arr[l].key)) / (arr[r].key - arr[l].key))*(r -l)  + l;
             if (arr[mid].key < key) {
                 l = mid + 1;
             } else if (arr[mid].key == key) {
