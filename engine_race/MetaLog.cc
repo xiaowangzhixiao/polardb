@@ -4,7 +4,10 @@
 #include <iostream>
 #include <sys/stat.h>
 #include <fcntl.h>
+#include <sys/mman.h>
 
+#define MMAP_SIZE 64000*16
+//#define MMAP_SIZE 50*16
 namespace polar_race {
 
     MetaLog::MetaLog():_offset(0),_fd(-1), _firstRead(true),_loading(false),_table(nullptr) {
@@ -12,23 +15,21 @@ namespace polar_race {
     }
 
     MetaLog::~MetaLog() {
+        if (_table != nullptr) {
+            munmap(_table, MMAP_SIZE);
+            _table = nullptr;
+        }
         if (_fd > 0) {
             close(_fd);
-        }
-        if (_table != nullptr) {
-            free(_table);
-            _table = nullptr;
         }
     }
 
     void MetaLog::readAhread() {
-//        readahead(_fd, 0, _offset*16);
+//        readahead(_fd, 0, _offset<<4);
     }
 
     RetCode MetaLog::load() {
-        // 插入skiplist准备读取
-        _table = static_cast<Location *>(malloc(_offset * 16));
-        pread(_fd, _table, _offset*16, 0);
+        _table = static_cast<Location *>(mmap(NULL, MMAP_SIZE, PROT_READ | PROT_WRITE, MAP_SHARED, _fd, 0));
         merge_sort(_table, _offset);
         return kSucc;
     }
@@ -43,7 +44,7 @@ namespace polar_race {
                 perror(("get size failed" + filename).c_str());
                 return kIOError;
             }
-            _offset = fileInfo.st_size / 16;
+//            _fd = open(filename.c_str(), O_RDWR | O_ASYNC);
             _fd = open(filename.c_str(), O_RDWR);
             if (_fd < 0) {
                 perror(("recover file " + filename + " failed\n").c_str());
@@ -56,15 +57,15 @@ namespace polar_race {
                 perror(("open file " + filename + " failed\n").c_str());
                 return kIOError;
             }
-            _offset = 0;
+            posix_fallocate(_fd, 0, MMAP_SIZE);
+            _table = static_cast<Location *>(mmap(NULL, MMAP_SIZE, PROT_READ | PROT_WRITE, MAP_SHARED, _fd, 0));
         }
+        _offset = offset;
         return kSucc;
     }
 
     RetCode MetaLog::append(const Location &location) {
-        if (pwrite(_fd, &location, 16, (__off_t)_offset.fetch_add(1) * 16) < 0) {
-            return kIOError;
-        }
+        _table[_offset.fetch_add(1)] = location;
         return kSucc;
     }
 
@@ -82,12 +83,11 @@ namespace polar_race {
      * 读取的所有数据
      * @return
      */
-    Location* MetaLog::findAll() {
+    Location *MetaLog::findAll() {
         bool loading = false;
         _loading.compare_exchange_strong(loading, true);
         if (!loading) {
-            if (_firstRead){
-//                std::cout << "load data ..."<<_offset <<std::endl;
+            if (_firstRead) {
                 load();
                 _firstRead = false;
             }

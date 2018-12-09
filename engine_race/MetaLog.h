@@ -23,7 +23,7 @@ namespace polar_race {
         void readAhread();
         Location* findAll();
         int getSize();
-        void print();
+//        void print();
     private:
 
         RetCode load();
@@ -33,7 +33,7 @@ namespace polar_race {
         std::atomic_bool _firstRead;
         std::atomic_bool _loading;
         Location* _table;
-        Location* _read_table;
+//        Location* _read_table;
     };
 
 }
