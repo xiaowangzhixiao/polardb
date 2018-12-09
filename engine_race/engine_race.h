@@ -5,6 +5,8 @@
 #include "include/engine.h"
 #include <cstdlib>
 #include "partiton.h"
+#include <mutex>
+#include <condition_variable>
 
 #define BUCKET_NUM 1024
 #define THREAD_NUM 64
@@ -21,7 +23,7 @@ namespace polar_race {
     public:
         static RetCode Open(const std::string& name, Engine** eptr);
 
-        explicit EngineRace(const std::string& dir):_dir(dir),_waiting(true),_container(0),_range_count(0), _firstRead(true),_loading(false){
+        explicit EngineRace(const std::string& dir):_dir(dir),_waiting(true),_container(0),_range_count(0), _firstRead(true), _firstRange(true),_loading(false){
 
         }
 
@@ -51,10 +53,13 @@ namespace polar_race {
         std::atomic_int _container;
         std::atomic_int _range_count;
         // 第一次读时构建索引
-        std::atomic_bool _firstRead;
-        std::atomic_bool _firstRange;
+        bool _firstRead;
+        bool _firstRange;
         std::atomic_bool _loading;
 //        std::atomic_int count;
+
+        std::mutex mtx;
+        std::condition_variable _finishReadCV;
     };
 
 }  // namespace polar_race

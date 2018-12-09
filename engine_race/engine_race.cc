@@ -73,10 +73,10 @@ namespace polar_race {
     }
 
     void PreReadWithThread(EngineRace *engineRace, int shard_id) {
-        auto shardSt = std::chrono::high_resolution_clock::now();
+//        auto shardSt = std::chrono::high_resolution_clock::now();
         engineRace->partition[shard_id - 2].valueLog.clear();
         engineRace->partition[shard_id].valueLog.findAll();
-        auto shardEd = std::chrono::high_resolution_clock::now();
+//        auto shardEd = std::chrono::high_resolution_clock::now();
     }
 
     // 1. Open engine
@@ -176,12 +176,19 @@ namespace polar_race {
                 std::cout << "Random pre read takes: " +
                            std::to_string(std::chrono::duration<double, std::milli>(rreadEnd - rreadStart).count())
                           + " milliseconds" + "\n";
-                _firstRead = false;
+                {
+                    std::unique_lock<std::mutex> lck(mtx);
+                    _firstRead = false;
+                    std::cout << "pread finish\n";
+                    _finishReadCV.notify_all();
+                }
             }
-//            _loading = false;
+            _loading = false;
         } else {
+            std::unique_lock <std::mutex> lck(mtx);
             while (_firstRead) {
-                usleep(5);
+                _finishReadCV.wait(lck);
+                std::cout << "thread awake\n";
             }
         }
 
@@ -238,11 +245,18 @@ namespace polar_race {
                 std::cout << "Range pre read takes: " +
                              std::to_string(std::chrono::duration<double, std::milli>(rreadEnd - rreadStart).count())
                              + " milliseconds" + "\n";
-                _firstRange = false;
+                {
+                    std::unique_lock<std::mutex> lck(mtx);
+                    _firstRange = false;
+                    std::cout << "preRange finish\n";
+                    _finishReadCV.notify_all();
+                }
             }
         } else {
+            std::unique_lock <std::mutex> lck(mtx);
             while (_firstRange) {
-                usleep(5);
+                _finishReadCV.wait(lck);
+                std::cout << "thread awake\n";
             }
         }
 
@@ -302,24 +316,36 @@ namespace polar_race {
                 _readone = i;
                 continue;
             }
-            auto prest = std::chrono::high_resolution_clock::now();
+//            auto prest = std::chrono::high_resolution_clock::now();
             Location *p_loc = partition[i].metaLog.findAll();
             char *p_val = partition[i].valueLog.findAll();
-            for (int j = 0; j < data_size - 1; j++) {
-                if ((p_loc + j)->key != (p_loc + j + 1)->key) {
-                    uint64_t tmpKey = bswap_64((p_loc + j)->key);
+//            for (int j = 0; j < data_size - 1; j++) {
+//                if ((p_loc + j)->key != (p_loc + j + 1)->key) {
+//                    uint64_t tmpKey = bswap_64((p_loc + j)->key);
+//                    PolarString pkey((char *) &tmpKey, 8);
+//                    int pos = (p_loc + j)->addr;
+//                    PolarString pval(p_val + pos * 4096, 4096);
+//                    visitor.Visit(pkey, pval);
+//                }
+//            }
+
+            Location *j;
+            for (j = p_loc; j < p_loc + data_size - 1; j++) {
+                if (j->key != (j + 1)->key) {
+                    uint64_t tmpKey = bswap_64(j->key);
                     PolarString pkey((char *) &tmpKey, 8);
-                    int pos = (p_loc + j)->addr;
+                    int pos = j->addr;
                     PolarString pval(p_val + pos * 4096, 4096);
                     visitor.Visit(pkey, pval);
                 }
             }
-            uint64_t tmpKey = bswap_64((p_loc + data_size-1)->key);
+
+            uint64_t tmpKey = bswap_64(j->key);
             PolarString pkey((char *) &tmpKey, 8);
-            int pos = (p_loc + data_size - 1)->addr;
+            int pos = j->addr;
             PolarString pval(p_val + pos * 4096, 4096);
             visitor.Visit(pkey, pval);
-            auto preed = std::chrono::high_resolution_clock::now();
+//            auto preed = std::chrono::high_resolution_clock::now();
 //            std::cout << "shard read: " +
 //                         std::to_string(std::chrono::duration<double, std::milli>(preed - prest).count())
 //                         + " ms" + "\n";
