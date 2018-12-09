@@ -7,7 +7,7 @@
 
 namespace polar_race {
 
-    MetaLog::MetaLog():_offset(0),_fd(-1), _firstRead(true),_loading(false) {
+    MetaLog::MetaLog():_offset(0),_fd(-1), _firstRead(true),_loading(false),_table(nullptr) {
 
     }
 
